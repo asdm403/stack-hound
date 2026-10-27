@@ -69,6 +69,9 @@ button{font:inherit;color:inherit}
 .boss-name{font-family:var(--display);font-weight:400;font-size:15px;text-align:center;text-shadow:0 2px 0 rgba(0,0,0,.6)}
 .boss-track{height:9px;border-radius:5px;background:rgba(0,0,0,.65);border:1px solid rgba(226,85,63,.45);overflow:hidden}
 .boss-fill{height:100%;transform-origin:left center;background:linear-gradient(90deg,#9c2c22,var(--ember))}
+.buffs{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;padding-top:6px}
+.buffs:empty{display:none}
+.buffs span{font-size:11px;font-weight:700;line-height:1;padding:3px 7px;border-radius:9px;color:var(--c);background:rgba(10,6,10,.7);border:1px solid var(--c)}
 
 /* Skill arc */
 #skills{position:absolute;z-index:6;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 14px);width:196px;height:196px;pointer-events:none;transition:opacity .25s;transform-origin:right bottom}
@@ -247,6 +250,7 @@ h1{margin:-4px 0 0;font-family:var(--display);font-weight:400;font-size:50px;lin
     </div>
     <div class="hpwrap gut"><div class="hp" id="hpBar"><div class="hp-fill" id="hpFill"></div><div class="hp-shield" id="hpShield"></div><span class="hp-txt" id="hpTxt">700 / 700</span></div></div>
     <div class="boss gut" id="bossBar" hidden><span class="boss-name" id="bossName"></span><div class="boss-track"><div class="boss-fill" id="bossFill"></div></div></div>
+    <div class="buffs gut" id="buffs"></div>
   </header>
 
   <div id="joy" hidden><div id="knob"></div></div>
@@ -267,14 +271,15 @@ h1{margin:-4px 0 0;font-family:var(--display);font-weight:400;font-size:50px;lin
       <div class="namefield" id="nameField"><label for="nameInput">내 이름 (랭킹에 표시됩니다)</label><input id="nameInput" type="text" maxlength="12" autocomplete="nickname" enterkeyhint="go" placeholder="예: 민수"></div>
       <p class="formula">Q 피해 = 기본 + <span class="g">스택</span> <small id="formulaNote">스택은 Q로 처치할 때만 쌓입니다</small></p>
       <div class="champs" role="radiogroup" aria-label="캐릭터 선택">
-        <button class="champ" type="button" role="radio" data-c="nasus" aria-checked="true"><span class="cn">나서스</span><span class="cdesc">근접 · 튼튼함 · Q 막타 스택 +3</span></button>
-        <button class="champ" type="button" role="radio" data-c="veigar" aria-checked="false"><span class="cn">베이가</span><span class="cdesc">원거리 · 연약함 · 관통 Q 스택 +2</span></button>
+        <button class="champ" type="button" role="radio" data-c="nasus" aria-checked="true"><span class="cn">나서스</span><span class="cdesc">근접 · 튼튼함 · Q 막타로 스택</span></button>
+        <button class="champ" type="button" role="radio" data-c="veigar" aria-checked="false"><span class="cn">베이가</span><span class="cdesc">원거리 · 연약함 · 관통 Q로 스택</span></button>
       </div>
       <ul class="rules">
         <li><span class="k">이동</span><span>화면을 끌면 조이스틱. 기본 공격은 자동, 미니언에게 맞으면 체력이 빠르게 줄어듭니다.</span></li>
-        <li><span class="k kq">Q</span><span id="ruleQ">Q 처치 시 스택 <b class="g">+3</b> · 공성 <b class="g">+6</b> · 슈퍼·보스 <b class="g">+12</b>. 금색 체력바면 한 방입니다.</span></li>
+        <li><span class="k kq">Q</span><span id="ruleQ">Q로 직접 처치할 때만 스택. 금색 체력바면 한 방입니다.</span></li>
         <li><span class="k kw">증강</span><span id="ruleAug">레벨업 때 Q·E·R·기본 공격 강화, <b class="w">W</b>에는 아수라장 증강 스킬, 패시브 증강은 4칸까지. <b class="r">R</b>은 6레벨부터.</span></li>
-        <li><span class="k">보스</span><span>2분마다 탑 프로게이머의 시그니처 챔피언이 보스로 등장합니다.</span></li>
+        <li><span class="k">몬스터</span><span>1분 대포 · 2분 칼날부리 · 3분 돌거북 · 4분 블루·레드 · 5분 슈퍼 미니언이 합류합니다.</span></li>
+        <li><span class="k">보스</span><span>2·4분에 탑 프로게이머 보스. 6분부터 드래곤 → 내셔 남작 → 장로 드래곤이 프로 보스와 번갈아 나옵니다.</span></li>
       </ul>
       <div class="row2"><button class="cta" id="btnStart" type="button">시작</button><button class="ghost" id="btnRank" type="button">랭킹</button></div>
       <p class="meta" id="bestLine">최고 기록 · 아직 없음</p>
@@ -361,7 +366,7 @@ for (const k of KEYS4) { const b = $('#btn' + k); btn[k] = { el: b, cd: b.queryS
 const el = {
   stack: $('#stackNum'), qLine: $('#qLine'), qSub: $('#qSub'), wName: $('#wName'), eName: $('#eName'), clock: $('#clock'), kills: $('#kills'), xpFill: $('#xpFill'), lv: $('#lvTxt'),
   hpBar: $('#hpBar'), hpFill: $('#hpFill'), hpShield: $('#hpShield'), hpTxt: $('#hpTxt'),
-  bossBar: $('#bossBar'), bossName: $('#bossName'), bossFill: $('#bossFill'), auto: $('#btnAuto'),
+  bossBar: $('#bossBar'), bossName: $('#bossName'), bossFill: $('#bossFill'), buffs: $('#buffs'), auto: $('#btnAuto'),
   banner: $('#banner'), bTitle: $('#bTitle'), bSub: $('#bSub'), hint: $('#hint'), joy: $('#joy'), knob: $('#knob'),
   title: $('#title'), pause: $('#pause'), over: $('#over'), levelup: $('#levelup'), opts: $('#opts'), luLv: $('#luLv'), luSub: $('#luSub'), luBuild: $('#luBuild'), reroll: $('#btnReroll'), pBuild: $('#pBuild'),
   bestLine: $('#bestLine'), fStacks: $('#fStacks'), fTime: $('#fTime'), fLv: $('#fLv'), fKills: $('#fKills'), fQ: $('#fQ'), fBuild: $('#fBuild'), fBoss: $('#fBoss'), fBest: $('#fBest'), newBest: $('#newBest'),
@@ -408,26 +413,28 @@ const SKS = {
 };
 let SK = SKS[champ];
 const CHAMPS = {
-  nasus:  { name: '나서스', hp: 700, spd: 165, r: 16, aaRange: 18, aaBase: 22, aaPer: 6, aaRate: 0.7, gain: { melee: 3, caster: 3, cannon: 6, super: 12, boss: 12 } },
-  veigar: { name: '베이가', hp: 520, spd: 160, r: 13, aaRange: 150, aaBase: 16, aaPer: 4, aaRate: 0.85, gain: { melee: 2, caster: 2, cannon: 4, super: 8, boss: 10 } }
+  nasus:  { name: '나서스', role: 'melee',  hp: 700, spd: 165, r: 16, aaRange: 18, aaBase: 22, aaPer: 6, aaRate: 0.7, stackF: 1 },
+  veigar: { name: '베이가', role: 'ranged', hp: 520, spd: 160, r: 13, aaRange: 150, aaBase: 16, aaPer: 4, aaRate: 0.85, stackF: 0.7 }
 };
 const CHP = () => CHAMPS[S.champ];
+// Stacks per Q kill come from the enemy; Veigar's piercing Q earns 70%.
+const stackGain = (m) => Math.max(1, Math.round((m.gain || ET[m.k].gain) * CHP().stackF));
 // Nasus keeps E and puts the augment skill on W; Veigar has his own W, so his augment skill sits on E.
 const AUGC = (c) => (c === 'veigar' ? 'E' : 'W');
 const AUG = () => AUGC(S.champ);
 // Q evolves at these stack counts, melee and ranged in their own way.
 const QEVO = {
   nasus: [
-    { at: 100, name: '충격파', desc: 'Q가 대상 주변 적에게 40% 피해를 퍼뜨립니다' },
-    { at: 250, name: '흡수의 일격', desc: 'Q로 처치할 때마다 최대 체력 2% 회복' },
-    { at: 500, name: '사막의 파동', desc: 'Q가 앞쪽 부채꼴로 모래 파동을 보냅니다 (Q 피해의 60%)' },
-    { at: 900, name: '분노의 일격', desc: 'Q 대기시간 −25%, 한 번에 1명 더 타격' }
+    { at: 150, name: '충격파', desc: 'Q가 대상 주변 적에게 40% 피해를 퍼뜨립니다 (퍼진 피해로는 스택 없음)' },
+    { at: 400, name: '강철 일격', desc: 'Q 사거리 +20, 맞은 적은 0.5초 기절 (보스 제외)' },
+    { at: 800, name: '사막의 파동', desc: 'Q가 앞쪽 부채꼴로 모래 파동을 보냅니다 (Q 피해의 60%, 스택 없음)' },
+    { at: 1500, name: '분노의 일격', desc: 'Q 대기시간 −25%, 한 번에 1명 더 타격' }
   ],
   veigar: [
-    { at: 100, name: '관통 강화', desc: 'Q 마법탄이 1명 더 관통하고 20% 빨라집니다' },
-    { at: 250, name: '폭발 마법탄', desc: 'Q 마법탄이 끝에서 폭발해 주변에 50% 피해' },
-    { at: 500, name: '쌍발', desc: 'Q가 마법탄 2발을 쏩니다' },
-    { at: 900, name: '삼연발', desc: 'Q가 3발을 쏘고 대기시간 −20%' }
+    { at: 150, name: '관통 강화', desc: 'Q 마법탄이 1명 더 관통하고 20% 빨라집니다' },
+    { at: 400, name: '폭발 마법탄', desc: 'Q 마법탄이 끝에서 폭발해 주변에 50% 피해 (폭발로는 스택 없음)' },
+    { at: 800, name: '쌍발', desc: 'Q가 마법탄 2발을 쏩니다 (추가 탄은 60% 피해)' },
+    { at: 1500, name: '삼연발', desc: 'Q가 3발을 쏘고 대기시간 −20% (추가 탄은 60% 피해)' }
   ]
 };
 const qTier = () => { let n = 0; for (const e of QEVO[S.champ]) if (S.stacks >= e.at) n++; return n; };
@@ -447,7 +454,7 @@ function descSkill(k, lv) {
   const d = SK[k], i = lv - 1, j = lv - 2, vg = S.champ === 'veigar';
   if (k === 'Q') {
     if (lv === 1) return vg ? `적을 ${1 + d.extra[0]}명까지 관통하는 마법탄. 처치하면 스택` : `다음 공격이 강해집니다. 처치하면 스택`;
-    let s = `피해 ${d.base[j]}→${d.base[i]} + 스택 · 대기 ${fmt(d.cd[j])}→${fmt(d.cd[i])}초`;
+    let s = `피해 ${d.base[j]}→${d.base[i]} (+레벨×3) + 스택 · 대기 ${fmt(d.cd[j])}→${fmt(d.cd[i])}초`;
     if (d.extra[i] > d.extra[j]) s += vg ? ` · ${1 + d.extra[i]}명 관통` : ` · 한 번에 ${1 + d.extra[i]}명 타격`;
     else if (d.range[i] > d.range[j]) s += ' · 사거리 증가';
     return s;
@@ -470,19 +477,21 @@ function descSkill(k, lv) {
 
 /* ---------- ARAM Mayhem augments (effects adapted to this game) ---------- */
 const TIER = { prism: { label: '프리즘', color: '#d6a2ff' }, gold: { label: '골드', color: '#f3c34f' }, silver: { label: '실버', color: '#c9d2dc' } };
-// Active augments that occupy the W slot.
+// Active augments that occupy the augment slot. `role` limits one to melee or ranged champions.
 const WA_MAX = 5;
 const WA = {
-  typhoon:   { name: '태풍',            tier: 'silver', cd: [2.2, 2.0, 1.8, 1.6, 1.4], n: [2, 3, 4, 5, 6], dmg: [18, 24, 30, 38, 46] },
+  typhoon:   { name: '태풍',            tier: 'silver', role: 'ranged', cd: [2.2, 2.0, 1.8, 1.6, 1.4], n: [2, 3, 4, 5, 6], dmg: [18, 24, 30, 38, 46] },
+  barrage:   { name: '탄환 세례',        tier: 'gold',   role: 'ranged', cd: [6, 5.6, 5.2, 4.8, 4.4], n: [14, 18, 22, 26, 32], dmg: [16, 20, 24, 29, 34] },
   boomerang: { name: '부메랑 투척',      tier: 'gold',   cd: [3.2, 3.0, 2.8, 2.6, 2.4], n: [1, 1, 2, 2, 3], dmg: [40, 52, 64, 78, 92], size: [16, 18, 20, 22, 24] },
   shark:     { name: '상어 폭풍',        tier: 'gold',   cd: [4.5, 4.2, 3.9, 3.6, 3.2], n: [2, 3, 3, 4, 5], dmg: [45, 60, 75, 90, 110], r: [42, 46, 50, 54, 58] },
-  firefox:   { name: '불여우',           tier: 'silver', n: [2, 3, 3, 4, 5], dmg: [14, 18, 22, 27, 32], radius: [62, 66, 70, 76, 82] },
+  firefox:   { name: '불여우',           tier: 'silver', role: 'melee',  n: [2, 3, 3, 4, 5], dmg: [14, 18, 22, 27, 32], radius: [62, 66, 70, 76, 82] },
   repulsor:  { name: '방출 역장',        tier: 'prism',  cd: [5, 4.6, 4.2, 3.8, 3.4], r: [95, 105, 115, 125, 140], dmg: [30, 40, 52, 66, 80], push: [60, 70, 80, 90, 100] },
   snowball:  { name: '데굴데굴 눈덩이!',  tier: 'prism',  cd: [5, 4.6, 4.2, 3.8, 3.4], size: [22, 26, 30, 34, 40], dmg: [60, 80, 100, 125, 150] },
   blades:    { name: '검무',             tier: 'prism',  cd: [4, 3.7, 3.4, 3.1, 2.8], n: [3, 4, 5, 6, 8], dmg: [40, 52, 64, 78, 94] }
 };
 const WA_LEARN = {
   typhoon: (d) => `${d.cd[0]}초마다 가까운 적 ${d.n[0]}명에게 번개 화살을 쏩니다. 발당 ${d.dmg[0]} 피해`,
+  barrage: (d) => `${d.cd[0]}초마다 적이 많은 쪽으로 1.6초 동안 탄환 ${d.n[0]}발을 난사합니다. 발당 ${d.dmg[0]} 피해`,
   boomerang: (d) => `${d.cd[0]}초마다 적이 많은 쪽으로 부메랑을 던집니다. 갈 때와 돌아올 때 모두 ${d.dmg[0]} 피해`,
   shark: (d) => `${d.cd[0]}초마다 주변 적 ${d.n[0]}곳에서 상어가 솟구쳐 ${d.dmg[0]} 피해와 0.6초 기절`,
   firefox: (d) => `여우불 ${d.n[0]}개가 주위를 돌며 닿은 적에게 ${d.dmg[0]} 피해. 재사용 대기시간 없음`,
@@ -498,35 +507,59 @@ function descWA(k, lv) {
   for (const f of ['n', 'dmg', 'size', 'r', 'radius', 'push', 'cd']) if (d[f] && d[f][i] !== d[f][j]) out.push(`${WA_LBL[f]} ${fmt(d[f][j])}→${fmt(d[f][i])}${f === 'cd' ? '초' : ''}`);
   return out.join(' · ');
 }
-// Passive augments: up to PA_SLOTS equipped, each upgradable to 5.
+// Passive augments: up to PA_SLOTS equipped, each upgradable to 5. No life steal for anyone.
 const PA_SLOTS = 4;
 const PA = {
   excited:   { name: '신난다!',          tier: 'gold',   desc: (lv) => `처치하면 3초 동안 이동·공격 속도 +${8 + lv * 6}%` },
   firebrand: { name: '화염 낙인',        tier: 'gold',   desc: (lv) => `기본 공격이 3초 동안 불태웁니다. 초당 최대 체력 ${fmt(lv * 1.5)}% 피해` },
-  absorb:    { name: '흡수',            tier: 'silver', desc: (lv) => `준 피해의 ${lv * 2}%만큼 체력 회복` },
-  giant:     { name: '거인의 결의',      tier: 'prism',  desc: (lv) => `최대 체력 +${lv * 15}%, 몸집이 커집니다` },
-  glass:     { name: '유리 대포',        tier: 'prism',  desc: (lv) => `모든 피해 +${lv * 12}%. 대신 최대 체력 −20%` },
   execute:   { name: '처형 시간',        tier: 'gold',   desc: (lv) => `체력이 ${3 + lv * 2}% 이하인 적은 Q 한 방에 처치 (보스는 1/3)` },
   tapdancer: { name: '탭 댄서',          tier: 'prism',  desc: (lv) => `기본 공격 속도 +${lv * 5}%. 적중마다 이동 속도 +${lv}% (10중첩)` },
   haste:     { name: '가속 추구',        tier: 'gold',   desc: (lv) => `모든 스킬 재사용 대기시간 −${lv * 6}%` },
-  scope:     { name: '조준경 부착',      tier: 'silver', desc: (lv) => `기본 공격·Q 사거리 +${lv * 8}` },
-  hedgehog:  { name: '고슴도치',         tier: 'gold',   desc: (lv) => `근접 공격을 받으면 받은 피해의 ${lv * 40}% + ${lv * 10}을 되돌려 줍니다` },
   dawn:      { name: '빛의 인도자 결의',  tier: 'gold',   desc: (lv) => `체력이 40% 아래로 떨어지면 3초에 걸쳐 ${15 + lv * 5}% 회복 (대기 ${45 - lv * 5}초)` },
-  souleater: { name: '영혼의 포식자',    tier: 'gold',   desc: (lv) => `Q로 처치할 때마다 스택 +${Math.floor((lv + 1) / 2)} 추가` },
+  souleater: { name: '영혼의 포식자',    tier: 'gold',   desc: (lv) => `Q로 처치할 때 ${lv * 12}% 확률로 스택 2배` },
   crit:      { name: '치명적인 공격',    tier: 'gold',   desc: (lv) => `기본 공격과 Q가 ${lv * 8}% 확률로 1.75배 피해` },
   swift:     { name: '날쌘걸음',         tier: 'gold',   desc: (lv) => `이동 속도 +${lv * 6}%` },
   shield:    { name: '강력한 방패',      tier: 'silver', desc: (lv) => `8초마다 최대 체력 ${lv * 6}%의 보호막` },
-  coin:      { name: '으악, 내 동전!',    tier: 'gold',   desc: (lv) => `보석 줍는 범위 +${lv * 40}%, 경험치 +${lv * 6}%` }
+  coin:      { name: '으악, 내 동전!',    tier: 'gold',   desc: (lv) => `보석 줍는 범위 +${lv * 40}%, 경험치 +${lv * 6}%` },
+  // melee only
+  giant:     { name: '거인의 결의',      tier: 'prism',  role: 'melee',  desc: (lv) => `최대 체력 +${lv * 15}%, 몸집이 커집니다` },
+  unyield:   { name: '난공불락',         tier: 'prism',  role: 'melee',  desc: (lv) => `받는 모든 피해 −${lv * 5}%` },
+  reckless:  { name: '무리한 진입',      tier: 'gold',   role: 'melee',  desc: (lv) => `주변에 적이 5명 이상이면 기본 공격 속도 +${lv * 8}%, 받는 피해 −${lv * 4}%` },
+  hedgehog:  { name: '고슴도치',         tier: 'gold',   role: 'melee',  desc: (lv) => `근접 공격을 받으면 받은 피해의 ${lv * 40}% + ${lv * 10}을 되돌려 줍니다` },
+  wall:      { name: '넘을 수 없는 벽',  tier: 'silver', role: 'melee',  desc: (lv) => `기본 공격과 Q가 적을 밀어내고 1초 동안 ${lv * 8}% 둔화 (보스 제외)` },
+  stomp:     { name: '우당탕탕',         tier: 'gold',   role: 'melee',  desc: (lv) => `${fmt(3.4 - lv * 0.3)}초마다 발을 굴러 주변 적에게 ${16 + lv * 10} 피해 (레벨 비례)` },
+  // ranged only
+  glass:     { name: '유리 대포',        tier: 'prism',  role: 'ranged', desc: (lv) => `모든 피해 +${lv * 12}%. 대신 최대 체력 −20%` },
+  scope:     { name: '조준경 부착',      tier: 'silver', role: 'ranged', desc: (lv) => `기본 공격·Q 사거리 +${lv * 8}` },
+  triple:    { name: '3연발',            tier: 'prism',  role: 'ranged', desc: (lv) => `기본 공격이 가까운 다른 적 2명에게도 마법탄을 쏩니다 (피해 ${30 + lv * 10}%)` },
+  twobirds:  { name: '한 발에 두 놈',    tier: 'gold',   role: 'ranged', desc: (lv) => `Q가 ${Math.ceil(lv / 2)}명 더 관통하고, 적을 뚫을 때마다 피해 +${lv * 6}%` },
+  lightup:   { name: '불을 밝혀',        tier: 'gold',   role: 'ranged', desc: (lv) => `기본 공격 4번째마다 ${80 + lv * 30}% 추가 피해` },
+  zeal:      { name: '열의',             tier: 'silver', role: 'ranged', desc: (lv) => `기본 공격 속도 +${lv * 7}%, 이동 속도 +${lv * 3}%` },
+  hexsoul:   { name: '마법공학의 영혼',   tier: 'prism',  role: 'ranged', desc: (lv) => `${fmt(5 - lv * 0.4)}초마다 기본 공격이 주변 적 ${2 + lv}명에게 번개로 튕깁니다 (${20 + lv * 12} 피해, 레벨 비례)` }
 };
 
 /* ---------- enemies + bosses ---------- */
+// The roster gets tougher over time: lane minions, cannons, raptors, krugs, Blue/Red, supers. `gain` = stacks per Q kill.
 const ET = {
-  melee:  { hp: 55,   spd: 66, r: 11, dmg: 9,  rate: 1.0, range: 0,   stack: 3,  xp: 1 },
-  caster: { hp: 38,   spd: 58, r: 10, dmg: 6,  rate: 2.2, range: 150, stack: 3,  xp: 1, shot: 190 },
-  cannon: { hp: 190,  spd: 46, r: 15, dmg: 16, rate: 2.6, range: 170, stack: 6,  xp: 3, shot: 180 },
-  super:  { hp: 520,  spd: 54, r: 20, dmg: 28, rate: 1.2, range: 0,   stack: 12, xp: 10 },
-  boss:   { hp: 3000, spd: 54, r: 30, dmg: 36, rate: 1.1, range: 0,   stack: 12, xp: 0 }
+  melee:    { hp: 55,   spd: 66,  r: 11, dmg: 9,  rate: 1.0, range: 0,   gain: 1,  xp: 1 },
+  caster:   { hp: 38,   spd: 58,  r: 10, dmg: 6,  rate: 2.2, range: 150, gain: 1,  xp: 1, shot: 190 },
+  cannon:   { hp: 190,  spd: 46,  r: 15, dmg: 16, rate: 2.6, range: 170, gain: 2,  xp: 3, shot: 180 },
+  raptor:   { hp: 45,   spd: 112, r: 9,  dmg: 7,  rate: 0.8, range: 0,   gain: 2,  xp: 1 },
+  raptorB:  { hp: 220,  spd: 98,  r: 14, dmg: 15, rate: 0.9, range: 0,   gain: 4,  xp: 4 },
+  krug:     { hp: 380,  spd: 38,  r: 19, dmg: 24, rate: 1.5, range: 0,   gain: 4,  xp: 6 },
+  krugling: { hp: 70,   spd: 58,  r: 11, dmg: 10, rate: 1.2, range: 0,   gain: 1,  xp: 1 },
+  blue:     { hp: 700,  spd: 46,  r: 25, dmg: 24, rate: 2.0, range: 220, gain: 8,  xp: 25, shot: 230, elite: '푸른 파수꾼' },
+  red:      { hp: 700,  spd: 62,  r: 25, dmg: 28, rate: 1.3, range: 0,   gain: 8,  xp: 25, elite: '붉은 덩굴정령' },
+  super:    { hp: 520,  spd: 54,  r: 20, dmg: 28, rate: 1.2, range: 0,   gain: 6,  xp: 10 },
+  boss:     { hp: 3000, spd: 54,  r: 30, dmg: 36, rate: 1.1, range: 0,   gain: 12, xp: 0 }
 };
+// Epic monsters take turns with the pros from minute 6.
+const MBOSS = {
+  drake: { name: '드래곤',      color: '#ff7a3a', hp: 1.2, r: 34, spd: 60, dmg: 1.1, gain: 15, tip: '불길 부채꼴과 떨어지는 화염구를 피하세요. 처치하면 모든 피해 영구 +8%' },
+  baron: { name: '내셔 남작',   color: '#b36bff', hp: 1.6, r: 42, spd: 36, dmg: 1.3, gain: 25, tip: '산성 가시와 발밑 촉수를 피하세요. 처치하면 90초 동안 피해 +25%' },
+  elder: { name: '장로 드래곤', color: '#8fe0ff', hp: 2.0, r: 38, spd: 62, dmg: 1.4, gain: 40, tip: '체력이 절반 아래면 더 사나워집니다. 처치하면 90초 동안 체력 15% 이하 적 즉시 처치' }
+};
+const BOSS_SEQ = ['pro', 'pro', 'drake', 'pro', 'baron', 'pro', 'elder', 'pro'];
 // Top-lane pros and the champion each is best known for, in the order they appear.
 const BOSSES = [
   { key: 'gragas',   pro: '도란',   champ: '그라가스', color: '#c98a4a', tip: '술통이 떨어질 원에서 벗어나세요. 큰 술통은 멀리 날려 보냅니다' },
@@ -548,21 +581,21 @@ let S = null, mode = 'title';
 
 /* ---------- formulas ---------- */
 const pa = (k) => S.pa[k] || 0;
-const hpMul = (t) => 1 + 0.028 * t + 3 * (t / 600) * (t / 600);
+const hpMul = (t) => 1 + 0.024 * t + 4.5 * (t / 600) * (t / 600);
 const dmgMul = (t) => 1 + 0.005 * t;
-const cdr = () => 1 - 0.06 * pa('haste');
-const pAmp = () => 1 + 0.12 * pa('glass');
-const qDmg = () => SK.Q.base[S.sk.Q - 1] + S.stacks;
-const qRange = () => SK.Q.range[S.sk.Q - 1] + 8 * pa('scope');
+const cdr = () => (1 - 0.06 * pa('haste')) * (S.blueT > S.t ? 0.8 : 1);
+const pAmp = () => (1 + 0.12 * pa('glass')) * (1 + 0.08 * S.drakeN) * (S.baronT > S.t ? 1.25 : 1);
+const qDmg = () => SK.Q.base[S.sk.Q - 1] + 3 * (S.lvl - 1) + S.stacks;
+const qRange = () => SK.Q.range[S.sk.Q - 1] + 8 * pa('scope') + (S.champ === 'nasus' && S.qTier >= 2 ? 20 : 0);
 const aaReach = () => CHP().aaRange + 8 * pa('scope');
 const qCdFull = () => SK.Q.cd[S.sk.Q - 1] * cdr() * (S.ult > 0 ? 0.5 : 1) * (qTier() >= 4 ? (S.champ === 'nasus' ? 0.75 : 0.8) : 1);
 const aaDmg = () => CHP().aaBase + CHP().aaPer * (S.lvl - 1) + AAU[S.champ].dmg[S.aaLv - 1];
 const excited = () => (S.exT > S.t ? 0.08 + 0.06 * pa('excited') : 0);
 const tapStacks = () => (S.tapT > S.t ? S.tapN : 0);
-const aaRate = () => CHP().aaRate * AAU[S.champ].rate[S.aaLv - 1] / ((1 + excited()) * (1 + 0.05 * pa('tapdancer')));
+const aaRate = () => CHP().aaRate * AAU[S.champ].rate[S.aaLv - 1] / ((1 + excited()) * (1 + 0.05 * pa('tapdancer')) * (1 + 0.07 * pa('zeal')) * (S.crowd >= 5 ? 1 + 0.08 * pa('reckless') : 1));
 const pScale = () => (S.ult > 0 ? 1.4 : 1);
 const lvScale = () => 1 + 0.15 * (S.lvl - 1);
-const moveSpd = () => CHP().spd * (1 + 0.06 * pa('swift')) * (1 + excited()) * (1 + 0.01 * pa('tapdancer') * tapStacks()) * (S.ult > 0 ? 1.1 : 1) * (S.p.slowT > S.t ? 1 - S.p.slow : 1);
+const moveSpd = () => CHP().spd * (1 + 0.06 * pa('swift')) * (1 + 0.03 * pa('zeal')) * (1 + excited()) * (1 + 0.01 * pa('tapdancer') * tapStacks()) * (S.ult > 0 ? 1.1 : 1) * (S.p.slowT > S.t ? 1 - S.p.slow : 1);
 const magR = () => 70 * (1 + 0.4 * pa('coin'));
 const maxHp = () => Math.round(CHP().hp * (1 + 0.15 * pa('giant')) * (pa('glass') ? 0.8 : 1));
 const xpNeed = (l) => 5 + 6 * (l - 1) + Math.floor(Math.pow(l - 1, 1.6));
@@ -571,16 +604,18 @@ const skMax = (k) => (k === AUG() ? WA_MAX : SK[k].max);
 
 function newRun(demo) {
   return {
-    demo, champ, t: 0, nid: 1, nextSpawn: 0.3, nextRing: 75, nextBoss: 120, bossN: 0, bossKills: [],
+    demo, champ, t: 0, nid: 1, nextSpawn: 0.3, nextRing: 75, nextBoss: 120, bossN: 0, bossSeq: 0, mbossN: 0, bossKills: [],
+    nextPack: 120, nextBuff: 240, buffN: 0, drakeN: 0, baronT: 0, elderT: 0, blueT: 0, redT: 0,
+    crowd: 0, stompT: 2, hexT: 0, aaN: 0, barrage: null,
     kills: 0, qKills: 0, stacks: 0, lvl: 1, xp: 0, pending: 0, offer: null, rerolls: 2,
     sk: champ === 'veigar' ? (demo ? { Q: 3, W: 2, R: 0 } : { Q: 1, W: 0, R: 0 }) : (demo ? { Q: 3, E: 2, R: 0 } : { Q: 1, E: 0, R: 0 }),
     aaLv: 1, qTier: 0,
-    wa: demo ? { k: 'firefox', lv: 3, ang: 0 } : { k: null, lv: 0, ang: 0 },
+    wa: demo ? { k: champ === 'veigar' ? 'typhoon' : 'firefox', lv: 3, ang: 0 } : { k: null, lv: 0, ang: 0 },
     pa: {},
     cd: { Q: 0, W: 0, E: 0, R: 0 }, cdTot: { Q: 1, W: 1, E: 1, R: 1 },
     qCharged: 0, qReadyT: 0, qHot: false, ult: 0, ultTot: 1, auraT: 0,
     exT: 0, tapN: 0, tapT: 0, shield: 0, shieldT: 0, dawnCd: 0, dawnT: 0, dawnRate: 0, hurtAcc: 0, hurtTxtT: 0,
-    p: { x: 0, y: 0, r: CHAMPS[champ].r, hp: CHAMPS[champ].hp, max: CHAMPS[champ].hp, face: -Math.PI / 2, aa: 0.5, swing: 0, walk: 0, qGlow: 0, vx: 0, vy: 0, slowT: 0, slow: 0 },
+    p: { x: 0, y: 0, r: CHAMPS[champ].r, hp: CHAMPS[champ].hp, max: CHAMPS[champ].hp, face: -Math.PI / 2, aa: 0.5, swing: 0, walk: 0, qGlow: 0, vx: 0, vy: 0, slowT: 0, slow: 0, burnT: 0, burnD: 0, burnAcc: 0 },
     cam: { x: 0, y: 0 }, camOff: 0,
     mins: [], shots: [], pshots: [], strikes: [], zones: [], teles: [], gems: [], drops: [], fx: [], motes: [], texts: [],
     shake: 0, hurtFlash: 0
@@ -596,19 +631,22 @@ function edgePoint(bias) {
   const k = Math.min(hw / Math.max(1e-6, Math.abs(c)), hh / Math.max(1e-6, Math.abs(s)));
   return { x: S.cam.x + c * k, y: S.cam.y + s * k };
 }
+// Lane minions make up less of each wave as tougher units join (about 56% by minute 10).
 function pickType(t) {
-  const r = Math.random();
-  const pc = t > 60 ? Math.min(0.1, 0.04 + (t - 60) / 4000) : 0;
-  const psu = t > 240 ? Math.min(0.05, 0.015 + (t - 240) / 8000) : 0;
-  if (r < psu) return 'super';
-  if (r < psu + pc) return 'cannon';
-  if (r < psu + pc + 0.16) return 'caster';
+  const w = {
+    melee: 1, caster: 0.19,
+    cannon: t > 60 ? Math.min(0.2, 0.05 + (t - 60) / 1500) : 0,
+    krug: t > 180 ? Math.min(0.22, 0.03 + (t - 180) / 1500) : 0,
+    super: t > 300 ? Math.min(0.18, 0.02 + (t - 300) / 1800) : 0
+  };
+  let r = Math.random() * (w.melee + w.caster + w.cannon + w.krug + w.super);
+  for (const k in w) { r -= w[k]; if (r <= 0) return k; }
   return 'melee';
 }
 function spawnEnemy(k, x, y) {
   const T = ET[k];
   const hp = Math.round(T.hp * hpMul(S.t) * (k === 'super' ? 0.7 : 1));
-  const m = { id: S.nid++, k, x, y, hp, max: hp, r: T.r, dmg: T.dmg * dmgMul(S.t), at: T.rate * rand(0.4, 1), flash: 0, lunge: 0, ph: Math.random() * TAU, dead: false, slowT: 0, slow: 0, burnT: 0, burn: 0, stunT: 0, fbT: 0, fbD: 0, fbAcc: 0, ffT: 0, face: 0 };
+  const m = { id: S.nid++, k, x, y, hp, max: hp, r: T.r, spd: T.spd, gain: T.gain, dmg: T.dmg * dmgMul(S.t), at: T.rate * rand(0.4, 1), flash: 0, lunge: 0, ph: Math.random() * TAU, dead: false, slowT: 0, slow: 0, burnT: 0, burn: 0, stunT: 0, fbT: 0, fbD: 0, fbAcc: 0, ffT: 0, face: 0 };
   S.mins.push(m);
   return m;
 }
@@ -619,8 +657,30 @@ function spawnBoss() {
   m.hp = m.max = Math.round(ET.boss.hp * hpMul(S.t) * 0.5 * (1 + 0.5 * cycle));
   m.bk = B.key; m.color = B.color;
   m.bname = (cycle ? '각성한 ' : '') + B.pro + '의 ' + B.champ;
+  bossInit(m, B.tip);
+}
+function spawnMonster(key) {
+  const B = MBOSS[key], cycle = Math.floor(S.mbossN++ / 3);
+  const c = edgePoint(false), m = spawnEnemy('boss', c.x, c.y);
+  m.hp = m.max = Math.round(ET.boss.hp * hpMul(S.t) * 0.5 * B.hp * (1 + 0.5 * cycle));
+  m.r = B.r; m.spd = B.spd; m.dmg *= B.dmg; m.gain = B.gain; m.bk = key; m.color = B.color; m.epic = true;
+  m.bname = (cycle ? '각성한 ' : '') + B.name;
+  bossInit(m, B.tip);
+}
+function bossInit(m, tip) {
   m.ai = { cd: { a: 2, b: 4, c: 8 }, q: [], dash: null, busy: 0, ult: 0, stance: 0, stanceT: 7, shots: 0, mist: null, ultOnce: false, auraT: 0 };
-  if (!S.demo) { banner(m.bname, B.tip); sfx.boss(); }
+  if (!S.demo) { banner(m.bname, tip); sfx.boss(); }
+}
+// Raptors arrive as a pack: one big raptor and a flock of small fast ones.
+function raptorPack() {
+  const c = edgePoint(true), n = 4 + Math.min(4, Math.floor((S.t - 120) / 90));
+  spawnEnemy('raptorB', c.x, c.y);
+  for (let i = 0; i < n; i++) spawnEnemy('raptor', c.x + rand(-40, 40), c.y + rand(-40, 40));
+}
+function spawnElite(k) {
+  const c = edgePoint(true);
+  spawnEnemy(k, c.x, c.y);
+  if (S.buffN <= 2) banner(ET[k].elite, k === 'blue' ? '느려지는 마법 구슬을 쏩니다 · 처치하면 60초 동안 재사용 대기시간 −20%' : '맞으면 불이 붙습니다 · 처치하면 60초 동안 기본 공격에 화염과 둔화');
 }
 function ringEvent() {
   const n = Math.min(48, 20 + Math.floor(S.t / 10), 230 - S.mins.length), R = Math.min(VW, VH) * 0.55 + 40;
@@ -642,8 +702,14 @@ function director(dt) {
   }
   if (S.demo) return;
   if (t >= S.nextRing) { S.nextRing += 75; if (!bossAlive) ringEvent(); }
-  // The next boss is due 2 minutes after the last one, but never while one is still alive.
-  if (t >= S.nextBoss && !bossAlive) { S.nextBoss = t + 120; spawnBoss(); }
+  if (t >= S.nextPack) { S.nextPack = t + 14; if (S.mins.length < 220) raptorPack(); }
+  if (t >= S.nextBuff) { S.nextBuff = t + 35; if (S.mins.filter((m) => ET[m.k].elite).length < 2) spawnElite(S.buffN++ % 2 ? 'red' : 'blue'); }
+  // Pros at 2:00 and 4:00, then epic monsters and pros alternate every 90s, never two at once.
+  if (t >= S.nextBoss && !bossAlive) {
+    const i = S.bossSeq++, kind = i < BOSS_SEQ.length ? BOSS_SEQ[i] : BOSS_SEQ[2 + (i - BOSS_SEQ.length) % 6];
+    S.nextBoss = t + (i < 2 ? 120 : 90);
+    if (kind === 'pro') spawnBoss(); else spawnMonster(kind);
+  }
 }
 
 /* ---------- boss patterns ---------- */
@@ -664,6 +730,11 @@ function runAct(m, act) {
       if (act.n === 1) addTele({ shape: 'line', x: m.x, y: m.y, a, len: 165, w: 56, delay: 0.7, dmg: D, color: '216,59,69' }, m);
       else if (act.n === 2) { later(m, 0, { kind: 'dash', a, dist: 70, spd: 500, dmg: 0 }); addTele({ shape: 'line', x: m.x + Math.cos(a) * 70, y: m.y + Math.sin(a) * 70, a, len: 135, w: 96, delay: 0.6, dmg: D, color: '216,59,69' }, m); }
       else addTele({ shape: 'circle', x: m.x + Math.cos(a) * 95, y: m.y + Math.sin(a) * 95, r: 76, delay: 0.6, dmg: D * 1.4, color: '216,59,69' }, m);
+      break;
+    case 'tentacle': addTele({ shape: 'circle', x: p.x + p.vx * 40, y: p.y + p.vy * 40, r: 52, delay: 0.75, dmg: D * 1.1, slow: 0.4, slowDur: 1, color: '200,120,255' }, m); break;
+    case 'meteor':
+      addTele({ shape: 'circle', x: act.x, y: act.y, r: 58, delay: 1.1, dmg: D * 0.9, color: '120,200,255' }, m);
+      S.fx.push({ kind: 'lob', fire: '143,224,255', x0: m.x, y0: m.y, x1: act.x, y1: act.y, t: 0, life: 1.1, s: 1 });
       break;
   }
 }
@@ -729,6 +800,37 @@ function bossAI(m, dt, d, slowF) {
       if (ai.cd.c <= 0 && d < 300) { ai.cd.c = 12; addTele({ shape: 'circle', x: m.x, y: m.y, r: 170, delay: 1.2, dmg: D * 0.6, linger: 2.4, dps: D, follow: m.id, color: '164,135,255' }, m); later(m, 0.3, { kind: 'rush' }); }
       else if (ai.cd.b <= 0 && d < 340) { ai.cd.b = 6; later(m, 0, { kind: 'rush' }); }
       break;
+    case 'drake':
+      if (ai.cd.a <= 0 && d < 230) { ai.cd.a = 4.5; addTele({ shape: 'cone', x: m.x, y: m.y, a, spread: 1.0, len: 210, delay: 0.6, dmg: D * 1.2, follow: m.id, color: '255,122,58' }, m); ai.busy = 0.7; }
+      else if (ai.cd.b <= 0 && d < 460) {
+        ai.cd.b = 5.5;
+        for (let k = 0; k < 3; k++) {
+          const t = lead(0.35 + k * 0.3), x = t.x + rand(-50, 50), y = t.y + rand(-50, 50), life = 1.0 + k * 0.25;
+          addTele({ shape: 'circle', x, y, r: 62, delay: life, dmg: D, color: '255,140,60' }, m);
+          S.fx.push({ kind: 'lob', fire: '255,140,60', x0: m.x, y0: m.y, x1: x, y1: y, t: 0, life, s: 1 });
+        }
+      }
+      else if (ai.cd.c <= 0 && d < 340) { ai.cd.c = 9; addTele({ shape: 'line', x: m.x, y: m.y, a, len: 300, w: 70, delay: 0.55, dmg: 0, color: '255,122,58' }, m); later(m, 0.55, { kind: 'dash', a, dist: 300, spd: 760, dmg: D * 1.1 }); ai.busy = 0.6; }
+      break;
+    case 'baron':
+      if (ai.cd.a <= 0 && d < 420) { ai.cd.a = 3.2; addTele({ shape: 'line', x: m.x, y: m.y, a, len: 400, w: 48, delay: 0.7, dmg: D, color: '179,107,255' }, m); }
+      if (ai.cd.b <= 0 && d < 380) { ai.cd.b = 7; for (let k = 0; k < 3; k++) later(m, k * 0.45, { kind: 'tentacle' }); }
+      if (ai.cd.c <= 0 && d < 360) {
+        ai.cd.c = 11; const t = lead(0.5);
+        addTele({ shape: 'circle', x: t.x, y: t.y, r: 95, delay: 0.9, dmg: D * 0.5, linger: 3, dps: D * 0.7, color: '150,90,230' }, m);
+        S.fx.push({ kind: 'lob', fire: '150,90,230', x0: m.x, y0: m.y, x1: t.x, y1: t.y, t: 0, life: 0.9, s: 1.3 });
+      }
+      break;
+    case 'elder': {
+      const rage = m.hp < m.max * 0.5 ? 0.7 : 1;
+      if (ai.cd.a <= 0 && d < 250) { ai.cd.a = 4 * rage; addTele({ shape: 'cone', x: m.x, y: m.y, a, spread: 1.2, len: 240, delay: 0.55, dmg: D * 1.2, linger: 1.5, dps: D * 0.6, follow: m.id, color: '143,224,255' }, m); ai.busy = 0.6; }
+      else if (ai.cd.b <= 0 && d < 520) {
+        ai.cd.b = 7 * rage; const t = lead(0.5);
+        for (let k = 0; k < 6; k++) { const ang = k / 6 * TAU + rand(0, 1), rr = k ? rand(60, 150) : 0; later(m, k * 0.12, { kind: 'meteor', x: t.x + Math.cos(ang) * rr, y: t.y + Math.sin(ang) * rr }); }
+      }
+      else if (ai.cd.c <= 0 && d < 380) { ai.cd.c = 8 * rage; addTele({ shape: 'line', x: m.x, y: m.y, a, len: 340, w: 76, delay: 0.5, dmg: 0, color: '143,224,255' }, m); later(m, 0.5, { kind: 'dash', a, dist: 340, spd: 820, dmg: D * 1.2 }); ai.busy = 0.55; }
+      break;
+    }
   }
   return ai.busy > 0 ? 'busy' : 'chase';
 }
@@ -791,7 +893,7 @@ function updateEnemies(dt) {
     const move = m.k === 'boss' ? bossAI(m, dt, d, slowF) : 'chase';
     if (m.dead) continue;
     const reach = E.range > 0 ? E.range : PR + m.r + 4;
-    const sp = E.spd * slowF * (m.ai && m.ai.ult > 0 ? 1.3 : 1);
+    const sp = m.spd * slowF * (m.ai && m.ai.ult > 0 ? 1.3 : 1);
     if (move === 'chase') {
       if (d > reach || (E.range > 0 && !inView)) { m.x += dx / d * sp * dt; m.y += dy / d * sp * dt; }
       else if (E.range > 0 && d < reach * 0.5) { m.x -= dx / d * sp * 0.5 * dt; m.y -= dy / d * sp * 0.5 * dt; }
@@ -802,8 +904,11 @@ function updateEnemies(dt) {
     m.at -= dt * slowF;
     if (move !== 'busy' && d <= reach + 6 && m.at <= 0 && (E.range === 0 || inView)) {
       m.at = E.rate;
-      if (E.range > 0) shoot(m.x + dx / d * m.r, m.y + dy / d * m.r, m.face, E.shot, m.dmg, m.k === 'cannon' ? 6 : 4, m.k, 0);
-      else { m.lunge = 1; damagePlayer(m.dmg, m); }
+      if (E.range > 0) shoot(m.x + dx / d * m.r, m.y + dy / d * m.r, m.face, E.shot, m.dmg, m.k === 'cannon' ? 6 : m.k === 'blue' ? 8 : 4, m.k, m.k === 'blue' ? 0.3 : 0);
+      else {
+        m.lunge = 1; damagePlayer(m.dmg, m);
+        if (m.k === 'red') { p.burnT = S.t + 3; p.burnD = m.dmg * 0.2; }
+      }
     }
   }
 }
@@ -872,7 +977,7 @@ function pickQTargets(onlyKill) {
     if (d > R + m.r + range) continue;
     const kill = qKillable(m, dmg);
     if (onlyKill && !kill) continue;
-    out.push({ m, s: (kill ? 1000 + CHP().gain[m.k] * 20 : 0) - d });
+    out.push({ m, s: (kill ? 1000 + stackGain(m) * 20 : 0) - d });
   }
   out.sort((x, y) => y.s - x.s);
   return out.slice(0, 1 + SK.Q.extra[S.sk.Q - 1] + (S.champ === 'nasus' && qTier() >= 4 ? 1 : 0)).map((o) => o.m);
@@ -899,10 +1004,10 @@ function fireQ(ts) {
   p.aa = Math.max(p.aa, 0.4);
   const tier = qTier();
   if (S.champ === 'veigar') {
-    const n = tier >= 4 ? 3 : tier >= 3 ? 2 : 1, left = 1 + SK.Q.extra[S.sk.Q - 1] + (tier >= 1 ? 1 : 0), spd = 640 * (tier >= 1 ? 1.2 : 1);
+    const n = tier >= 4 ? 3 : tier >= 3 ? 2 : 1, left = 1 + SK.Q.extra[S.sk.Q - 1] + (tier >= 1 ? 1 : 0) + Math.ceil(pa('twobirds') / 2), spd = 640 * (tier >= 1 ? 1.2 : 1);
     for (let k = 0; k < n; k++) {
       const tg = ts[k], a = tg ? Math.atan2(tg.y - p.y, tg.x - p.x) : p.face + (k === 1 ? 0.22 : -0.22);
-      S.pshots.push({ kind: 'vq', x: p.x, y: p.y, vx: Math.cos(a), vy: Math.sin(a), spd, dist: 0, range: qRange() + 30, r: tier >= 2 ? 11 : 9, dmg, left, hits: {}, life: 2, boom: tier >= 2 });
+      S.pshots.push({ kind: 'vq', x: p.x, y: p.y, vx: Math.cos(a), vy: Math.sin(a), spd, dist: 0, range: qRange() + 30, r: tier >= 2 ? 11 : 9, dmg: k ? dmg * 0.6 : dmg, left, hits: {}, life: 2, boom: tier >= 2 });
     }
     sfx.q(); return;
   }
@@ -910,6 +1015,8 @@ function fireQ(ts) {
     S.fx.push({ kind: 'qslash', x: t.x, y: t.y, a: Math.atan2(t.y - p.y, t.x - p.x), t: 0, life: 0.34, r: t.r + 12 });
     if (i > 0) S.fx.push({ kind: 'link', x0: t0.x, y0: t0.y, x1: t.x, y1: t.y, t: 0, life: 0.22 });
     const tx = t.x, ty = t.y;
+    if (tier >= 2 && t.k !== 'boss') t.stunT = S.t + 0.5;
+    wallHit(t);
     qStrike(t, dmg);
     if (tier >= 1) for (const o of S.mins) if (o !== t && !o.dead && Math.hypot(o.x - tx, o.y - ty) < 55 + o.r) qStrike(o, dmg * 0.4, true);
   });
@@ -923,11 +1030,32 @@ function fireQ(ts) {
   }
   sfx.q();
 }
-// One Q hit on one target: execute check, crit roll, damage number (skipped for splash hits).
+// One Q hit on one target: execute check, crit roll, damage number. Splash hits (quiet) never earn stacks.
 function qStrike(t, dmg, quiet) {
-  if (t.hp <= t.max * execThr(t) && effDmg(t, dmg) < t.hp) { addText(t.x, t.y - t.r - 14, '처형', '#ff6b74', 15); t.hp = 0; kill(t, 'q'); return; }
+  const src = quiet ? 'qs' : 'q';
+  if (t.hp <= t.max * execThr(t) && effDmg(t, dmg) < t.hp) { addText(t.x, t.y - t.r - 14, '처형', '#ff6b74', 15); t.hp = 0; kill(t, src); return; }
   const crit = Math.random() < 0.08 * pa('crit'), dd = dmg * (crit ? 1.75 : 1), e = effDmg(t, dd);
-  if (!hit(t, dd, 'q') && !quiet) addText(t.x, t.y - t.r - 12, String(Math.round(e)), crit ? '#ffb347' : '#f1e8d8', crit ? 17 : 14);
+  if (!hit(t, dd, src) && !quiet) addText(t.x, t.y - t.r - 12, String(Math.round(e)), crit ? '#ffb347' : '#f1e8d8', crit ? 17 : 14);
+}
+// Melee augment: hits shove the target back and slow it.
+function wallHit(t) {
+  const lv = pa('wall');
+  if (!lv || t.dead || t.k === 'boss') return;
+  const p = S.p, dx = t.x - p.x, dy = t.y - p.y, d = Math.hypot(dx, dy) || 1, kb = ET[t.k].elite ? 3 : 8 + 4 * lv;
+  t.x += dx / d * kb; t.y += dy / d * kb; t.slowT = S.t + 1; t.slow = 0.08 * lv;
+}
+// Ranged augment: lightning jumps from the struck enemy to its neighbours.
+function hexChain(t) {
+  const lv = pa('hexsoul'), dmg = (20 + lv * 12) * lvScale(), seen = { [t.id]: 1 };
+  let cur = t;
+  for (let k = 0; k < 2 + lv; k++) {
+    let nx = null, nd = 170;
+    for (const o of S.mins) { if (o.dead || seen[o.id]) continue; const dd = Math.hypot(o.x - cur.x, o.y - cur.y); if (dd < nd) { nd = dd; nx = o; } }
+    if (!nx) break;
+    seen[nx.id] = 1;
+    S.fx.push({ kind: 'zap', x0: cur.x, y0: cur.y, x1: nx.x, y1: nx.y, t: 0, life: 0.25 });
+    hit(nx, dmg, 'hex'); cur = nx;
+  }
 }
 function vqBoom(s) {
   S.fx.push({ kind: 'ring', x: s.x, y: s.y, t: 0, life: 0.35, r0: 10, r1: 58, c: '190,150,255', w: 5 });
@@ -1060,6 +1188,11 @@ function castWA() {
       S.fx.push({ kind: 'ring', x: p.x, y: p.y, t: 0, life: 0.45, r0: 20, r1: R, c: '200,170,255', w: 9 });
       sfx.w(); break;
     }
+    case 'barrage': {
+      const c = bestCluster(90, 300) || near[0];
+      S.barrage = { a: Math.atan2(c.y - p.y, c.x - p.x), left: d.n[i], every: 1.6 / d.n[i], t: 0, dmg };
+      sfx.bolt(); break;
+    }
     case 'snowball': {
       const c = bestCluster(90, 280) || near[0], a = Math.atan2(c.y - p.y, c.x - p.x);
       S.pshots.push({ kind: 'snow', x: p.x, y: p.y, vx: Math.cos(a), vy: Math.sin(a), spd: 270, r: d.size[i], dmg, life: 2.4, hits: {}, rot: 0 });
@@ -1097,6 +1230,12 @@ function updateWA(dt) {
       }
     }
   } else if (w.k && (autoWE || S.demo) && S.cd[AUG()] <= 0 && countNear(260) >= 1) castWA();
+  if (S.barrage) {
+    const b = S.barrage;
+    b.t -= dt;
+    while (b.t <= 0 && b.left > 0) { b.t += b.every; b.left--; const a = b.a + rand(-0.4, 0.4); S.pshots.push({ kind: 'bullet', x: p.x, y: p.y, vx: Math.cos(a), vy: Math.sin(a), spd: 720, life: 0.55, r: 5, dmg: b.dmg }); }
+    if (b.left <= 0) S.barrage = null;
+  }
   for (const s of S.pshots) {
     s.life -= dt;
     if (s.kind === 'bolt') {
@@ -1119,7 +1258,7 @@ function updateWA(dt) {
       const st = s.spd * dt; s.x += s.vx * st; s.y += s.vy * st; s.dist += st;
       for (const m of S.mins) {
         if (m.dead || s.hits[m.id] || Math.abs(m.x - s.x) > m.r + 24 || Math.abs(m.y - s.y) > m.r + 24) continue;
-        if (Math.hypot(m.x - s.x, m.y - s.y) < m.r + s.r) { s.hits[m.id] = 1; qStrike(m, s.dmg); burst(m.x, m.y, '200,160,255', 6); if (--s.left <= 0) { s.life = 0; break; } }
+        if (Math.hypot(m.x - s.x, m.y - s.y) < m.r + s.r) { s.hits[m.id] = 1; qStrike(m, s.dmg); s.dmg *= 1 + 0.06 * pa('twobirds'); burst(m.x, m.y, '200,160,255', 6); if (--s.left <= 0) { s.life = 0; break; } }
       }
       if (s.dist >= s.range) s.life = 0;
       if (s.life <= 0 && s.boom && !s.boomed) { s.boomed = true; vqBoom(s); }
@@ -1128,6 +1267,13 @@ function updateWA(dt) {
       else { const dx = p.x - s.x, dy = p.y - s.y, d = Math.hypot(dx, dy) || 1; s.x += dx / d * s.spd * 1.15 * dt; s.y += dy / d * s.spd * 1.15 * dt; if (d < 24) s.life = 0; }
       s.rot += dt * 16; pierce(s);
     } else if (s.kind === 'snow') { s.x += s.vx * s.spd * dt; s.y += s.vy * s.spd * dt; s.rot += dt * 6; pierce(s); }
+    else if (s.kind === 'bullet') {
+      s.x += s.vx * s.spd * dt; s.y += s.vy * s.spd * dt;
+      for (const m of S.mins) {
+        if (m.dead || Math.abs(m.x - s.x) > m.r + 8 || Math.abs(m.y - s.y) > m.r + 8) continue;
+        if (Math.hypot(m.x - s.x, m.y - s.y) < m.r + s.r) { hit(m, s.dmg, 'w'); s.life = 0; burst(s.x, s.y, '255,220,120', 2); break; }
+      }
+    }
   }
   S.pshots = S.pshots.filter((s) => s.life > 0);
   for (const k of S.strikes) {
@@ -1170,6 +1316,17 @@ function updatePlayer(dt) {
   if (mag > 0.05) { const sp = moveSpd(); p.x += vx * sp * dt; p.y += vy * sp * dt; p.face = Math.atan2(vy, vx); p.walk += dt * 11 * mag; }
   p.swing = Math.max(0, p.swing - dt * 4.5); p.qGlow = Math.max(0, p.qGlow - dt);
   for (const k of KEYS4) S.cd[k] = Math.max(0, S.cd[k] - dt);
+  S.crowd = pa('reckless') ? countNear(90) : 0;
+  if (p.burnT > S.t) { p.burnAcc += dt; if (p.burnAcc >= 0.5) { p.burnAcc = 0; damagePlayer(p.burnD * 0.5, null); } }
+  if (pa('stomp')) {
+    S.stompT -= dt;
+    const lv = pa('stomp'), R = 80 + lv * 8;
+    if (S.stompT <= 0 && countNear(R) > 0) {
+      S.stompT = 3.4 - lv * 0.3;
+      for (const m of S.mins) if (!m.dead && Math.hypot(m.x - p.x, m.y - p.y) < R + m.r) hit(m, (16 + lv * 10) * lvScale(), 'stomp');
+      S.fx.push({ kind: 'ring', x: p.x, y: p.y, t: 0, life: 0.4, r0: 10, r1: R, c: '232,190,110', w: 7 }); S.shake = Math.max(S.shake, 2.5);
+    }
+  }
   S.qReadyT = S.cd.Q <= 0 ? S.qReadyT + dt : 0;
   const hot = S.cd.Q <= 0 ? pickQTargets(true) : [];
   S.qHot = hot.length > 0;
@@ -1184,8 +1341,11 @@ function updatePlayer(dt) {
     const t = pickAATarget();
     if (t) {
       p.face = Math.atan2(t.y - p.y, t.x - p.x); p.swing = 1; p.aa = aaRate();
-      if (S.champ === 'veigar') S.pshots.push({ kind: 'bolt', aa: true, b: AAU.veigar.bounce[S.aaLv - 1], hitIds: {}, x: p.x, y: p.y, px: p.x, py: p.y, tid: t.id, dmg: aaDmg(), spd: 520, life: 1.2 });
-      else {
+      if (S.champ === 'veigar') {
+        const lu = pa('lightup') && ++S.aaN % 4 === 0;
+        S.pshots.push({ kind: 'bolt', aa: true, big: lu, b: AAU.veigar.bounce[S.aaLv - 1], hitIds: {}, x: p.x, y: p.y, px: p.x, py: p.y, tid: t.id, dmg: aaDmg() * (lu ? 1.8 + 0.3 * pa('lightup') : 1), spd: 520, life: 1.2 });
+        if (pa('triple')) for (const o of nearSorted(aaReach() + p.r + 40).filter((o) => o !== t).slice(0, 2)) S.pshots.push({ kind: 'bolt', aa: true, b: 0, hitIds: {}, x: p.x, y: p.y, px: p.x, py: p.y, tid: o.id, dmg: aaDmg() * (0.3 + 0.1 * pa('triple')), spd: 520, life: 1.2 });
+      } else {
         S.fx.push({ kind: 'swing', x: p.x, y: p.y, a: p.face, t: 0, life: 0.16, r: p.r * pScale() + 18 });
         const cl = AAU.nasus.cleave[S.aaLv - 1], tx = t.x, ty = t.y;
         aaImpact(t, aaDmg());
@@ -1213,13 +1373,16 @@ function aaImpact(t, base) {
   const crit = Math.random() < 0.08 * pa('crit');
   if (pa('firebrand')) { t.fbT = S.t + 3; t.fbD = (t.k === 'boss' ? 0.3 : 1) * 0.015 * pa('firebrand') * t.max + 5; }
   if (pa('tapdancer')) { S.tapN = Math.min(10, tapStacks() + 1); S.tapT = S.t + 2.5; }
+  if (S.redT > S.t) { t.fbT = S.t + 3; t.fbD = Math.max(t.fbD, (t.k === 'boss' ? 0.3 : 1) * 0.012 * t.max + 8); if (t.k !== 'boss') { t.slowT = S.t + 1; t.slow = Math.max(t.slow, 0.25); } }
+  if (pa('hexsoul') && S.hexT <= S.t) { S.hexT = S.t + 5 - 0.4 * pa('hexsoul'); hexChain(t); }
+  wallHit(t);
   hit(t, base * (crit ? 1.75 : 1), 'aa');
 }
 function hit(m, dmg, src) {
   if (m.dead) return false;
-  const d = effDmg(m, dmg), dealt = Math.min(d, Math.max(0, m.hp));
-  m.hp -= d; m.flash = 0.1;
-  if (pa('absorb') && !S.demo) { const p = S.p; p.hp = Math.min(p.max, p.hp + Math.min(p.max * 0.04, dealt * 0.02 * pa('absorb'))); }
+  m.hp -= effDmg(m, dmg); m.flash = 0.1;
+  // Elder Dragon buff: anything but a boss dies once it drops below 15%.
+  if (m.hp > 0 && S.elderT > S.t && m.k !== 'boss' && m.hp < m.max * 0.15) m.hp = 0;
   if (m.hp <= 0) { kill(m, src); return true; }
   return false;
 }
@@ -1229,27 +1392,34 @@ function kill(m, src) {
   const E = ET[m.k], q = src === 'q' || src === 'r';
   if (pa('excited')) S.exT = S.t + 3;
   if (q) {
-    const gain = CHP().gain[m.k] + Math.floor((pa('souleater') + 1) / 2);
+    let gain = stackGain(m);
+    if (Math.random() < 0.12 * pa('souleater')) gain *= 2;
     S.stacks += gain; S.qKills++;
-    if (S.champ === 'nasus' && S.qTier >= 2) S.p.hp = Math.min(S.p.max, S.p.hp + S.p.max * 0.02);
     checkEvo();
-    addText(m.x, m.y - m.r - 6, '+' + gain, GOLD, 17 + gain * 0.8);
-    burst(m.x, m.y, '243,195,79', 8 + E.stack);
+    addText(m.x, m.y - m.r - 6, '+' + gain, GOLD, Math.min(30, 17 + gain * 0.8));
+    burst(m.x, m.y, '243,195,79', Math.min(30, 8 + gain));
     if (!S.demo) {
       const sp = toScreen(m.x, m.y), n = Math.min(8, 2 + (gain >> 1));
       for (let i = 0; i < n; i++) S.motes.push({ x0: sp.x, y0: sp.y, cx: sp.x + rand(-80, 80), cy: sp.y - rand(30, 120), t: -i * 0.03, life: 0.6 });
       bumpStack();
     }
-    S.shake = Math.max(S.shake, E.stack >= 6 ? 5 : 2.5);
-    sfx.stack(E.stack);
+    S.shake = Math.max(S.shake, gain >= 4 ? 5 : 2.5);
+    sfx.stack(gain);
   } else burst(m.x, m.y, '150,135,118', 5);
+  if (m.k === 'krug') for (let i = 0; i < 2; i++) spawnEnemy('krugling', m.x + rand(-14, 14), m.y + rand(-14, 14));
+  if (m.k === 'blue') { S.blueT = S.t + 60; banner('푸른 파수꾼 처치', '60초 동안 재사용 대기시간 −20%'); }
+  if (m.k === 'red') { S.redT = S.t + 60; banner('붉은 덩굴정령 처치', '60초 동안 기본 공격이 불태우고 느리게 합니다'); }
   if (m.k === 'boss') {
     S.drops.push({ kind: 'chest', x: m.x, y: m.y, t: 0 });
     S.bossKills.push(m.bname); S.rerolls++;
     S.p.hp = Math.min(S.p.max, S.p.hp + S.p.max * 0.3);
     S.teles = S.teles.filter((z) => z.owner !== m.id);
     burst(m.x, m.y, '243,195,79', 40);
-    if (!S.demo) { banner(m.bname + ' 처치', '강화 상자를 주우세요 · 새로고침 +1'); sfx.clear(); }
+    let reward = '강화 상자를 주우세요 · 새로고침 +1';
+    if (m.bk === 'drake') { S.drakeN++; reward = '모든 피해 영구 +8% · ' + reward; }
+    else if (m.bk === 'baron') { S.baronT = S.t + 90; reward = '90초 동안 피해 +25% · ' + reward; }
+    else if (m.bk === 'elder') { S.elderT = S.t + 90; reward = '90초 동안 체력 15% 이하 적 즉시 처치 · ' + reward; }
+    if (!S.demo) { banner(m.bname + ' 처치', reward); sfx.clear(); }
   } else {
     dropGem(m.x, m.y, E.xp * (q ? 2 : 1));
     const r = Math.random();
@@ -1261,8 +1431,9 @@ function damagePlayer(d, src) {
   if (S.demo || mode !== 'play') return;
   const p = S.p;
   if (S.ult > 0) d *= 1 - SK.R.dr[S.sk.R - 1];
+  d *= (1 - 0.05 * pa('unyield')) * (S.crowd >= 5 ? 1 - 0.04 * pa('reckless') : 1);
   const b = typeof src === 'number' ? S.mins.find((m) => m.id === src) : src;
-  if (b && !b.dead && pa('hedgehog') && (b.k === 'melee' || b.k === 'super' || b.k === 'boss')) hit(b, d * 0.4 * pa('hedgehog') + 10 * pa('hedgehog'), 'thorn');
+  if (b && !b.dead && pa('hedgehog') && ET[b.k].range === 0) hit(b, d * 0.4 * pa('hedgehog') + 10 * pa('hedgehog'), 'thorn');
   if (S.shield > 0) { const s = Math.min(S.shield, d); S.shield -= s; d -= s; }
   if (d <= 0) return;
   p.hp -= d; S.hurtAcc += d;
@@ -1371,13 +1542,13 @@ function options() {
   const pool = [], own = S.champ === 'veigar' ? ['Q', 'W', 'R'] : ['Q', 'E', 'R'], sec = own[1];
   for (const k of own) { if (S.sk[k] >= SK[k].max || (k === 'R' && S.lvl < 6)) continue; pool.push({ type: 'sk', k, w: k === 'Q' ? 4 : S.sk[k] === 0 ? 4 : 3 }); }
   if (S.aaLv < 5) pool.push({ type: 'aa', w: 2.2 });
-  if (!S.wa.k) for (const k of Object.keys(WA)) pool.push({ type: 'wa', k, w: 0.55 });
+  const role = CHP().role, fits = (d) => !d.role || d.role === role;
+  if (!S.wa.k) { for (const k of Object.keys(WA)) if (fits(WA[k])) pool.push({ type: 'wa', k, w: 0.55 }); }
   else if (S.wa.lv < WA_MAX) pool.push({ type: 'wa', k: S.wa.k, w: 3 });
   const owned = Object.keys(S.pa);
   for (const k of Object.keys(PA)) {
     const lv = S.pa[k] || 0;
-    if (lv >= 5 || (!lv && owned.length >= PA_SLOTS)) continue;
-    if (k === 'absorb' && S.champ === 'veigar') continue; // ranged champions don't get life steal
+    if (lv >= 5 || (!lv && owned.length >= PA_SLOTS) || !fits(PA[k])) continue;
     pool.push({ type: 'pa', k, w: lv ? 2 : 0.45 });
   }
   const out = [];
@@ -1723,8 +1894,11 @@ function drawPShot(s) {
   if (s.kind === 'bolt') {
     ctx.strokeStyle = s.aa ? 'rgba(200,160,255,.9)' : 'rgba(160,230,255,.9)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(s.px, s.py); ctx.lineTo(s.x, s.y); ctx.stroke();
-    ctx.globalAlpha = 0.4; circle(s.x, s.y, 8); ctx.fillStyle = s.aa ? '#b48cff' : '#7fd4ff'; ctx.fill(); ctx.globalAlpha = 1;
-    circle(s.x, s.y, 3.5); ctx.fillStyle = '#ffffff'; ctx.fill();
+    ctx.globalAlpha = 0.4; circle(s.x, s.y, s.big ? 13 : 8); ctx.fillStyle = s.big ? '#ffb347' : s.aa ? '#b48cff' : '#7fd4ff'; ctx.fill(); ctx.globalAlpha = 1;
+    circle(s.x, s.y, s.big ? 5.5 : 3.5); ctx.fillStyle = '#ffffff'; ctx.fill();
+  } else if (s.kind === 'bullet') {
+    ctx.strokeStyle = 'rgba(255,220,120,.95)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(s.x - s.vx * 14, s.y - s.vy * 14); ctx.lineTo(s.x, s.y); ctx.stroke();
   } else if (s.kind === 'vq') {
     for (let k = 1; k <= 4; k++) { ctx.globalAlpha = 0.18 * (5 - k) / 4; circle(s.x - s.vx * k * 9, s.y - s.vy * k * 9, s.r * (1 - k * 0.12)); ctx.fillStyle = '#b48cff'; ctx.fill(); }
     ctx.globalAlpha = 0.45; circle(s.x, s.y, s.r * 1.8); ctx.fillStyle = '#9b6bff'; ctx.fill(); ctx.globalAlpha = 1;
@@ -1765,6 +1939,31 @@ function drawMinion(m) {
     rrect(-r, -r * 0.72, r * 1.75, r * 1.44, 4); ctx.fillStyle = '#8a3526'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#4a1610'; ctx.stroke();
     ctx.fillStyle = '#3a3340'; ctx.fillRect(r * 0.25, -r * 0.27, r * 1.05, r * 0.54);
     ctx.fillStyle = '#e2553f'; ctx.fillRect(r * 1.2, -r * 0.33, r * 0.2, r * 0.66);
+  } else if (m.k === 'raptor' || m.k === 'raptorB') {
+    const big = m.k === 'raptorB';
+    ctx.rotate(a);
+    ctx.fillStyle = '#f2c46a'; ctx.beginPath(); ctx.moveTo(r * 0.7, -r * 0.28); ctx.lineTo(r * 1.65, 0); ctx.lineTo(r * 0.7, r * 0.28); ctx.fill();
+    ctx.fillStyle = big ? '#ffd23a' : '#a83a1e'; ctx.beginPath(); ctx.moveTo(-r * 0.2, 0); ctx.lineTo(-r * 1.4, -r * 0.55); ctx.lineTo(-r * 1.1, 0); ctx.lineTo(-r * 1.4, r * 0.55); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, 0, r * 1.1, r * 0.8, 0, 0, TAU); ctx.fillStyle = big ? '#c8341f' : '#d8603a'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#4a140a'; ctx.stroke();
+    if (big) { ctx.fillStyle = '#ffd23a'; ctx.beginPath(); ctx.moveTo(r * 0.1, 0); ctx.lineTo(-r * 0.5, -r * 0.35); ctx.lineTo(-r * 0.3, 0); ctx.lineTo(-r * 0.5, r * 0.35); ctx.fill(); }
+    ctx.fillStyle = '#ffe36a'; circle(r * 0.55, -r * 0.32, r * 0.14); ctx.fill(); circle(r * 0.55, r * 0.32, r * 0.14); ctx.fill();
+  } else if (m.k === 'krug' || m.k === 'krugling') {
+    ctx.rotate(a);
+    circle(r * 0.78, 0, r * 0.38); ctx.fillStyle = '#6e6a5e'; ctx.fill();
+    circle(0, 0, r); ctx.fillStyle = '#8a8476'; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#3a372f'; ctx.stroke();
+    ctx.fillStyle = '#a49e8e'; for (let i = 0; i < 5; i++) { const b = i / 5 * TAU + 0.3; circle(Math.cos(b) * r * 0.5, Math.sin(b) * r * 0.5, r * 0.27); ctx.fill(); }
+    ctx.fillStyle = '#6f9a4a'; circle(-r * 0.15, -r * 0.1, r * 0.22); ctx.fill();
+    ctx.fillStyle = '#ffb347'; circle(r * 0.98, -r * 0.14, r * 0.08); ctx.fill(); circle(r * 0.98, r * 0.14, r * 0.08); ctx.fill();
+  } else if (m.k === 'blue' || m.k === 'red') {
+    const bl = m.k === 'blue';
+    ctx.globalAlpha = 0.22 + Math.sin(S.t * 4) * 0.08; circle(0, 0, r * 1.4); ctx.fillStyle = bl ? '#4da3ff' : '#ff5a3a'; ctx.fill(); ctx.globalAlpha = 1;
+    ctx.rotate(a);
+    for (const sd of [1, -1]) { circle(r * 0.35, sd * r * 0.85, r * 0.36); ctx.fillStyle = bl ? '#3a5f9a' : '#7a2a1e'; ctx.fill(); }
+    circle(0, 0, r); ctx.fillStyle = bl ? '#4f7fc4' : '#a8402a'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = bl ? '#1a2f5a' : '#3a0e06'; ctx.stroke();
+    if (bl) { ctx.fillStyle = '#9fe6ff'; ctx.beginPath(); ctx.moveTo(-r * 0.25, -r * 0.45); ctx.lineTo(r * 0.12, 0); ctx.lineTo(-r * 0.25, r * 0.45); ctx.lineTo(-r * 0.08, 0); ctx.fill(); }
+    else { ctx.strokeStyle = '#5a8a2e'; ctx.lineWidth = 3; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * (0.32 + i * 0.18), -1.2 + i, 0.3 + i); ctx.stroke(); } }
+    circle(r * 0.55, 0, r * 0.32); ctx.fillStyle = bl ? '#2b4a7a' : '#5a1a10'; ctx.fill();
+    ctx.fillStyle = bl ? '#d6f0ff' : '#ffd23a'; circle(r * 0.7, -r * 0.12, r * 0.07); ctx.fill(); circle(r * 0.7, r * 0.12, r * 0.07); ctx.fill();
   } else {
     const [fill, edge] = MCOL[m.k];
     if (m.k === 'super') {
@@ -1873,8 +2072,38 @@ const BOSS_DRAW = {
     circle(0, 0, k); ctx.fillStyle = '#4b3a8f'; ctx.fill(); ctx.strokeStyle = '#1e1640'; ctx.lineWidth = 3; ctx.stroke();
     circle(k * 0.3, 0, k * 0.45); ctx.fillStyle = '#2a2148'; ctx.fill();
     ctx.fillStyle = '#ffe36a'; circle(k * 0.5, -k * 0.15, k * 0.1); ctx.fill(); circle(k * 0.5, k * 0.15, k * 0.1); ctx.fill();
+  },
+  drake(m, r) { drawDragon(r, ['#9a3a1a', '#c4522a', '#d8622e', '#5a1e0a', '#e8743a', '#ffe36a']); },
+  elder(m, r) {
+    ctx.globalAlpha = 0.25 + Math.sin(S.t * 3) * 0.1; circle(0, 0, r * 1.5); ctx.fillStyle = '#8fe0ff'; ctx.fill(); ctx.globalAlpha = 1;
+    drawDragon(r, ['#3a5f7a', '#5a8fae', '#7fb8d6', '#16304a', '#a8d8f0', '#ffffff']);
+  },
+  baron(m, r) {
+    ctx.fillStyle = '#4a2a6a';
+    for (let i = 0; i < 7; i++) {
+      const a = i / 7 * TAU + S.t * 0.5, rr = r * (1.25 + 0.1 * Math.sin(S.t * 3 + i));
+      ctx.beginPath(); ctx.moveTo(Math.cos(a - 0.22) * r * 0.8, Math.sin(a - 0.22) * r * 0.8); ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); ctx.lineTo(Math.cos(a + 0.22) * r * 0.8, Math.sin(a + 0.22) * r * 0.8); ctx.fill();
+    }
+    circle(0, 0, r); ctx.fillStyle = '#6a3a9a'; ctx.fill(); ctx.strokeStyle = '#2a1040'; ctx.lineWidth = 3; ctx.stroke();
+    circle(-r * 0.2, 0, r * 0.62); ctx.fillStyle = '#7f4cb5'; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r * 0.55, 0, r * 0.42, r * 0.5, 0, 0, TAU); ctx.fillStyle = '#2a0f3a'; ctx.fill();
+    ctx.fillStyle = '#e8dcc4';
+    for (let i = 0; i < 6; i++) { const a = -1.3 + i * 0.52; ctx.beginPath(); ctx.moveTo(r * 0.55 + Math.cos(a) * r * 0.42, Math.sin(a) * r * 0.5); ctx.lineTo(r * 0.55 + Math.cos(a + 0.1) * r * 0.2, Math.sin(a + 0.1) * r * 0.24); ctx.lineTo(r * 0.55 + Math.cos(a + 0.22) * r * 0.42, Math.sin(a + 0.22) * r * 0.5); ctx.fill(); }
+    ctx.fillStyle = '#d6a2ff'; circle(r * 0.05, -r * 0.48, r * 0.09); ctx.fill(); circle(r * 0.05, r * 0.48, r * 0.09); ctx.fill();
   }
 };
+// Wings, tail, body and horned head; colors = [wing, tail, body, edge, head, eyes].
+function drawDragon(r, c) {
+  const fl = Math.sin(S.t * 7) * 0.25;
+  ctx.fillStyle = c[0];
+  for (const sd of [1, -1]) { ctx.beginPath(); ctx.moveTo(-r * 0.1, sd * r * 0.4); ctx.lineTo(-r * 0.9, sd * r * (1.7 + fl)); ctx.lineTo(-r * 0.5, sd * r * 1.0); ctx.lineTo(-r * 1.3, sd * r * (1.2 + fl)); ctx.lineTo(-r * 0.7, sd * r * 0.3); ctx.fill(); }
+  ctx.fillStyle = c[1]; ctx.beginPath(); ctx.moveTo(-r * 0.7, -r * 0.3); ctx.lineTo(-r * 2.0, 0); ctx.lineTo(-r * 0.7, r * 0.3); ctx.fill();
+  circle(0, 0, r * 0.85); ctx.fillStyle = c[2]; ctx.fill(); ctx.strokeStyle = c[3]; ctx.lineWidth = 3; ctx.stroke();
+  ctx.fillStyle = '#f2e0c0';
+  for (const sd of [1, -1]) { ctx.beginPath(); ctx.moveTo(r * 0.75, sd * r * 0.22); ctx.lineTo(r * 0.4, sd * r * 0.62); ctx.lineTo(r * 0.9, sd * r * 0.3); ctx.fill(); }
+  ctx.beginPath(); ctx.ellipse(r * 0.95, 0, r * 0.55, r * 0.36, 0, 0, TAU); ctx.fillStyle = c[4]; ctx.fill(); ctx.strokeStyle = c[3]; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = c[5]; circle(r * 1.08, -r * 0.15, r * 0.08); ctx.fill(); circle(r * 1.08, r * 0.15, r * 0.08); ctx.fill();
+}
 function drawBoss(m) {
   const big = m.ai.ult > 0 && (m.bk === 'renekton' || m.bk === 'aatrox') ? 1.3 : 1, r = m.r * big;
   ctx.save(); ctx.translate(m.x, m.y);
@@ -1889,9 +2118,11 @@ function drawBoss(m) {
   if (m.flash > 0) { ctx.globalAlpha = Math.min(0.6, m.flash * 6); ctx.fillStyle = '#fff6e0'; circle(m.x, m.y, r); ctx.fill(); ctx.globalAlpha = 1; }
 }
 function drawBar(m, qd) {
-  const kill = qKillable(m, qd);
-  if (m.hp >= m.max && !kill) return;
-  const w = Math.max(20, m.r * 2.2), x = m.x - w / 2, y = m.y - m.r - 9;
+  const kill = qKillable(m, qd), w = Math.max(20, m.r * 2.2), x = m.x - w / 2, y = m.y - m.r - 9;
+  if (ET[m.k].elite) {
+    ctx.font = `11px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(10,6,10,.85)';
+    ctx.strokeText(ET[m.k].elite, m.x, y - 3); ctx.fillStyle = m.k === 'blue' ? '#9fd0ff' : '#ff9a7a'; ctx.fillText(ET[m.k].elite, m.x, y - 3);
+  } else if (m.hp >= m.max && !kill) return;
   ctx.fillStyle = 'rgba(10,6,10,.8)'; ctx.fillRect(x - 1, y - 1, w + 2, 5.5);
   ctx.fillStyle = kill ? GOLD : '#e2553f'; ctx.fillRect(x, y, w * clamp(m.hp / m.max, 0, 1), 3.5);
   if (!kill) { const thr = clamp(Math.max(effDmg(m, qd), m.max * execThr(m)) / m.max, 0, 1); ctx.fillStyle = '#fff3c4'; ctx.fillRect(x + w * thr - 0.75, y - 1.5, 1.5, 6.5); }
@@ -1918,7 +2149,7 @@ function drawDrop(o) {
     ctx.fillStyle = GOLD; ctx.fillRect(x - 13, y - 2, 26, 3); ctx.fillRect(x - 2.5, y - 4, 5, 7);
   }
 }
-const SHOTC = { blast: ['#4da3ff', '#d6f0ff'], needle: ['#9fd8ff', '#ffffff'], harpoon: ['#ff8c3a', '#ffe0b0'], shuriken: ['#a487ff', '#ffe36a'] };
+const SHOTC = { blast: ['#4da3ff', '#d6f0ff'], needle: ['#9fd8ff', '#ffffff'], harpoon: ['#ff8c3a', '#ffe0b0'], shuriken: ['#a487ff', '#ffe36a'], blue: ['#4da3ff', '#bfe6ff'] };
 function drawShot(s) {
   if (s.k === 'cannon') { circle(s.x, s.y, 6); ctx.fillStyle = '#2a2228'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#ff7a4a'; ctx.stroke(); return; }
   const col = SHOTC[s.k] || ['#ff8a5c', '#ffd2b8'];
@@ -1948,6 +2179,10 @@ function drawFxWorld() {
     } else if (f.kind === 'link' || f.kind === 'blade') {
       ctx.strokeStyle = f.kind === 'blade' ? `rgba(225,232,245,${1 - k})` : `rgba(255,230,150,${1 - k})`; ctx.lineWidth = f.kind === 'blade' ? 3 : 2;
       ctx.beginPath(); ctx.moveTo(f.x0, f.y0); ctx.lineTo(f.x1, f.y1); ctx.stroke();
+    } else if (f.kind === 'zap') {
+      ctx.strokeStyle = `rgba(150,225,255,${1 - k})`; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(f.x0, f.y0);
+      for (let i = 1; i < 4; i++) { const u = i / 4; ctx.lineTo(f.x0 + (f.x1 - f.x0) * u + rand(-7, 7), f.y0 + (f.y1 - f.y0) * u + rand(-7, 7)); }
+      ctx.lineTo(f.x1, f.y1); ctx.stroke();
     } else if (f.kind === 'wave') {
       const rr = f.r * (0.45 + 0.55 * k);
       ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.a);
@@ -1962,6 +2197,7 @@ function drawFxWorld() {
       ctx.beginPath(); ctx.moveTo(f.x0, f.y0); ctx.lineTo(f.x1, f.y1); ctx.stroke();
     } else if (f.kind === 'lob') {
       const x = f.x0 + (f.x1 - f.x0) * k, y = f.y0 + (f.y1 - f.y0) * k - Math.sin(k * Math.PI) * 90;
+      if (f.fire) { ctx.globalAlpha = 0.4; circle(x, y, 15 * f.s); ctx.fillStyle = `rgb(${f.fire})`; ctx.fill(); ctx.globalAlpha = 1; circle(x, y, 7 * f.s); ctx.fillStyle = '#fff1c4'; ctx.fill(); continue; }
       rrect(x - 9 * f.s, y - 7 * f.s, 18 * f.s, 14 * f.s, 3); ctx.fillStyle = '#7a4a22'; ctx.fill(); ctx.strokeStyle = '#c9a046'; ctx.lineWidth = 2; ctx.stroke();
     } else if (f.kind === 'ram') {
       const x = f.x + Math.cos(f.a) * f.len * k, y = f.y + Math.sin(f.a) * f.len * k;
@@ -2091,6 +2327,14 @@ function syncHud() {
   const boss = S.mins.find((m) => m.k === 'boss');
   el.bossBar.hidden = !boss;
   if (boss) { setText(el.bossName, 'bn', boss.bname); el.bossName.style.color = boss.color; el.bossFill.style.transform = `scaleX(${clamp(boss.hp / boss.max, 0, 1)})`; }
+  const bf = [], left = (T) => Math.ceil(T - S.t);
+  if (S.blueT > S.t) bf.push(['#6fb8ff', '블루 ' + left(S.blueT)]);
+  if (S.redT > S.t) bf.push(['#ff7a5a', '레드 ' + left(S.redT)]);
+  if (S.drakeN) bf.push(['#ff9a5a', '드래곤 ×' + S.drakeN]);
+  if (S.baronT > S.t) bf.push(['#c58cff', '남작 ' + left(S.baronT)]);
+  if (S.elderT > S.t) bf.push(['#8fe0ff', '장로 ' + left(S.elderT)]);
+  const bh = bf.map(([c, s]) => `<span style="--c:${c}">${s}</span>`).join('');
+  if (hudCache.bf !== bh) { hudCache.bf = bh; el.buffs.innerHTML = bh; }
   for (const k of KEYS4) syncSkill(k);
   btn.Q.el.classList.toggle('hot', S.qHot || S.qCharged > 0);
   skillsEl.classList.toggle('auto', autoWE);
@@ -2126,7 +2370,7 @@ function tone(f1, f2, dur, type, vol, delay) {
 }
 const sfx = {
   q() { tone(330, 90, 0.16, 'square', 0.06); },
-  stack(n) { tone(660, 0, 0.09, 'triangle', 0.1); tone(n >= 6 ? 1180 : 990, 0, 0.15, 'triangle', 0.1, 0.07); if (n >= 12) tone(1480, 0, 0.22, 'triangle', 0.09, 0.15); },
+  stack(n) { tone(660, 0, 0.09, 'triangle', 0.1); tone(n >= 4 ? 1180 : 990, 0, 0.15, 'triangle', 0.1, 0.07); if (n >= 8) tone(1480, 0, 0.22, 'triangle', 0.09, 0.15); },
   w() { tone(240, 90, 0.35, 'sawtooth', 0.04); },
   bolt() { tone(1800, 600, 0.12, 'square', 0.03); },
   whoosh() { tone(500, 200, 0.25, 'triangle', 0.05); },
@@ -2327,8 +2571,8 @@ function gameOver() {
   setTimeout(() => { if (mode === 'over') showOnly(el.over); }, 750);
 }
 const RULEQ = {
-  nasus: 'Q 처치 시 스택 <b class="g">+3</b> · 공성 <b class="g">+6</b> · 슈퍼·보스 <b class="g">+12</b>. 스택 <b class="g">100·250·500·900</b>마다 Q가 진화합니다.',
-  veigar: 'Q는 관통 마법탄. 처치 시 스택 <b class="g">+2</b> · 공성 <b class="g">+4</b> · 슈퍼 <b class="g">+8</b> · 보스 <b class="g">+10</b>. 스택 <b class="g">100·250·500·900</b>마다 Q가 진화합니다.'
+  nasus: 'Q로 직접 처치해야 스택: 미니언 <b class="g">+1</b> · 대포 <b class="g">+2</b> · 정글 몹 <b class="g">+2~8</b> · 보스 <b class="g">+12~40</b>. 퍼진 피해는 스택 없음. 스택 <b class="g">150·400·800·1500</b>마다 Q가 진화합니다.',
+  veigar: 'Q는 관통 마법탄. 맞혀 처치한 적마다 스택: 미니언 <b class="g">+1</b> · 정글 몹 <b class="g">+1~6</b> · 보스 <b class="g">+8~28</b>. 폭발 피해는 스택 없음. 스택 <b class="g">150·400·800·1500</b>마다 Q가 진화합니다.'
 };
 const RULEAUG = {
   nasus: '레벨업 때 Q·E·R·기본 공격 강화, <b class="w">W</b>에는 아수라장 증강 스킬, 패시브 증강은 4칸까지. <b class="r">R</b>은 6레벨부터.',
