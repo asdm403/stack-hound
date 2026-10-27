@@ -116,8 +116,10 @@ button{font:inherit;color:inherit}
 #hint.off{opacity:0}
 
 /* Overlays */
-.overlay{position:absolute;inset:0;z-index:10;box-sizing:border-box;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-top:calc(env(safe-area-inset-top,0px) + 16px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 16px);background:linear-gradient(180deg,rgba(20,17,26,0) 0%,rgba(20,17,26,.25) 35%,rgba(20,17,26,.88) 100%);overflow-y:auto;touch-action:pan-y}
-.overlay.center{justify-content:center;background:rgba(14,11,18,.7)}
+.overlay{position:absolute;inset:0;z-index:10;box-sizing:border-box;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;padding-top:calc(env(safe-area-inset-top,0px) + 16px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 16px);background:linear-gradient(180deg,rgba(20,17,26,0) 0%,rgba(20,17,26,.25) 35%,rgba(20,17,26,.88) 100%);overflow-y:auto;touch-action:pan-y}
+.overlay.center{background:rgba(14,11,18,.7)}
+.overlay>*{margin-top:auto}
+.overlay.center>*{margin-bottom:auto}
 .card{width:100%;max-width:440px;box-sizing:border-box;padding:20px 18px 18px;border-radius:20px;background:var(--ink);border:1px solid rgba(243,195,79,.3);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;gap:13px;flex-shrink:0}
 .eyebrow{margin:0;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--sand)}
 h1{margin:-4px 0 0;font-family:var(--display);font-weight:400;font-size:50px;line-height:1;color:var(--gold);text-shadow:0 3px 0 #5c3d0c;text-wrap:balance}
@@ -138,6 +140,13 @@ h1{margin:-4px 0 0;font-family:var(--display);font-weight:400;font-size:50px;lin
 .ghost:disabled{opacity:.35;cursor:default}
 .meta{margin:0;font-size:12px;color:var(--sand);text-align:center;font-variant-numeric:tabular-nums}
 @media (hover:none){.pc{display:none}}
+.champs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.champ{display:grid;gap:2px;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(241,232,216,.04);cursor:pointer}
+.champ .cn{font-family:var(--display);font-weight:400;font-size:19px}
+.champ .cdesc{font-size:11px;font-weight:500;color:var(--sand);line-height:1.35}
+.champ[aria-checked="true"]{border-color:var(--gold);background:rgba(243,195,79,.12);box-shadow:inset 0 0 0 1px var(--gold)}
+.champ[data-c="veigar"][aria-checked="true"]{border-color:var(--violet);background:rgba(180,140,255,.14);box-shadow:inset 0 0 0 1px var(--violet)}
+.champ:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .final{display:flex;align-items:baseline;gap:10px}
 .final-num{font-family:var(--display);font-weight:400;font-size:70px;line-height:.9;color:var(--gold);text-shadow:0 3px 0 #5c3d0c;font-variant-numeric:tabular-nums}
 .final-lbl{font-family:var(--display);font-weight:400;font-size:22px;color:var(--sand)}
@@ -209,6 +218,11 @@ h1{margin:-4px 0 0;font-family:var(--display);font-weight:400;font-size:50px;lin
 .rank-list .nm{font-weight:700;font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rank-list .sub2{display:block;font-size:11px;font-weight:500;color:var(--sand)}
 .rank-list .sc{font-family:var(--display);font-size:20px;color:var(--gold)}
+.rank-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border-radius:12px;background:rgba(0,0,0,.35);border:1px solid var(--line)}
+.rtab{height:40px;border:0;border-radius:9px;background:transparent;font-weight:700;font-size:14px;cursor:pointer;color:var(--sand)}
+.rtab[aria-selected="true"]{background:rgba(243,195,79,.18);color:var(--gold)}
+.rtab[data-c="veigar"][aria-selected="true"]{background:rgba(180,140,255,.2);color:#d6c2ff}
+.rtab:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
 .rank-status{margin:0;font-size:13px;font-weight:700;text-align:center}
 .rank-status:empty{display:none}
 </style>
@@ -251,12 +265,15 @@ h1{margin:-4px 0 0;font-family:var(--display);font-weight:400;font-size:50px;lin
       <p class="eyebrow">미니언 무리를 Q로 마무리해 스택을 쌓는 서바이벌</p>
       <h1>스택 사냥개</h1>
       <div class="namefield" id="nameField"><label for="nameInput">내 이름 (랭킹에 표시됩니다)</label><input id="nameInput" type="text" maxlength="12" autocomplete="nickname" enterkeyhint="go" placeholder="예: 민수"></div>
-      <p class="formula">Q 피해 = 기본 + <span class="g">스택</span> <small>스택은 Q로 처치할 때만 쌓입니다</small></p>
+      <p class="formula">Q 피해 = 기본 + <span class="g">스택</span> <small id="formulaNote">스택은 Q로 처치할 때만 쌓입니다</small></p>
+      <div class="champs" role="radiogroup" aria-label="캐릭터 선택">
+        <button class="champ" type="button" role="radio" data-c="nasus" aria-checked="true"><span class="cn">나서스</span><span class="cdesc">근접 · 튼튼함 · Q 막타 스택 +3</span></button>
+        <button class="champ" type="button" role="radio" data-c="veigar" aria-checked="false"><span class="cn">베이가</span><span class="cdesc">원거리 · 연약함 · 관통 Q 스택 +2</span></button>
+      </div>
       <ul class="rules">
         <li><span class="k">이동</span><span>화면을 끌면 조이스틱. 기본 공격은 자동, 미니언에게 맞으면 체력이 빠르게 줄어듭니다.</span></li>
-        <li><span class="k kq">Q</span><span>Q 처치 시 스택 <b class="g">+3</b> · 공성 <b class="g">+6</b> · 슈퍼·보스 <b class="g">+12</b>. 금색 체력바면 한 방입니다.</span></li>
-        <li><span class="k kw">W</span><span>레벨업 카드에 아수라장 증강 스킬이 무작위로 나옵니다. 하나를 <b class="w">W</b>에 장착해 강화하세요.</span></li>
-        <li><span class="k">증강</span><span>패시브 증강은 4칸까지 장착하고 각각 5단계까지 강화합니다. <b class="e">E</b> 장판, <b class="r">R</b>은 6레벨부터.</span></li>
+        <li><span class="k kq">Q</span><span id="ruleQ">Q 처치 시 스택 <b class="g">+3</b> · 공성 <b class="g">+6</b> · 슈퍼·보스 <b class="g">+12</b>. 금색 체력바면 한 방입니다.</span></li>
+        <li><span class="k kw">증강</span><span>레벨업 때 Q·E·R 강화, <b class="w">W</b>에는 아수라장 증강 스킬, 패시브 증강은 4칸까지. <b class="r">R</b>은 6레벨부터.</span></li>
         <li><span class="k">보스</span><span>2분마다 탑 프로게이머의 시그니처 챔피언이 보스로 등장합니다.</span></li>
       </ul>
       <div class="row2"><button class="cta" id="btnStart" type="button">시작</button><button class="ghost" id="btnRank" type="button">랭킹</button></div>
@@ -298,9 +315,9 @@ h1{margin:-4px 0 0;font-family:var(--display);font-weight:400;font-size:50px;lin
   <section id="over" class="overlay center gut" hidden>
     <div class="card">
       <p class="eyebrow">쓰러졌습니다</p>
-      <div class="final"><span class="final-num" id="fStacks">0</span><span class="final-lbl">스택</span></div>
+      <div class="final"><span class="final-num" id="fTime">00:00</span><span class="final-lbl" id="fChamp">생존</span></div>
       <dl class="stats">
-        <div><dt>생존 시간</dt><dd id="fTime">00:00</dd></div>
+        <div><dt>스택</dt><dd id="fStacks">0</dd></div>
         <div><dt>레벨</dt><dd id="fLv">1</dd></div>
         <div><dt>처치</dt><dd id="fKills">0</dd></div>
         <div><dt>Q 막타</dt><dd id="fQ">0</dd></div>
@@ -321,7 +338,8 @@ h1{margin:-4px 0 0;font-family:var(--display);font-weight:400;font-size:50px;lin
   <section id="rank" class="overlay center gut" hidden>
     <div class="card">
       <p class="ptitle">랭킹</p>
-      <p class="meta" id="rankNote">스택 기준 · 이름마다 최고 기록</p>
+      <div class="rank-tabs" role="tablist" aria-label="챔피언별 랭킹"><button class="rtab" type="button" role="tab" data-c="nasus" aria-selected="true">나서스 랭킹</button><button class="rtab" type="button" role="tab" data-c="veigar" aria-selected="false">베이가 랭킹</button></div>
+      <p class="meta" id="rankNote">생존 시간 기준 · 이름마다 최고 기록</p>
       <ol class="rank-list" id="rankList"></ol>
       <div class="btns">
         <button class="ghost" id="btnRankRefresh" type="button">새로고침</button>
@@ -366,26 +384,50 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 };
-const KEY_BEST = 'stackhound.best3', KEY_AUTO = 'stackhound.autoWE', KEY_MUTE = 'stackhound.muted';
-let best = store.get(KEY_BEST, null);
-if (!best || typeof best.stacks !== 'number') best = { stacks: 0, time: 0, lvl: 0 };
+const KEY_BEST = 'stackhound.best4', KEY_AUTO = 'stackhound.autoWE', KEY_MUTE = 'stackhound.muted', KEY_CHAMP = 'stackhound.champ';
+let champ = store.get(KEY_CHAMP, 'nasus') === 'veigar' ? 'veigar' : 'nasus';
+function loadBest(c) { const b = store.get(KEY_BEST + '.' + c, null); return b && typeof b.time === 'number' ? b : { stacks: 0, time: 0, lvl: 0 }; }
+let best = loadBest(champ);
 let autoWE = store.get(KEY_AUTO, true) !== false;
 let muted = !!store.get(KEY_MUTE, false);
 
 /* ---------- skills ---------- */
 const COL = { Q: '#f3c34f', W: '#b48cff', E: '#4fd1c5', R: '#ffad4d' };
-const SK = {
-  Q: { name: '사냥의 일격', max: 5, base: [30, 45, 60, 80, 100], cd: [2.0, 1.8, 1.6, 1.4, 1.2], extra: [0, 0, 1, 1, 2], range: [46, 46, 54, 54, 62] },
-  E: { name: '영혼의 불꽃', max: 5, cd: [7, 6.5, 6, 5.5, 5], radius: [72, 80, 88, 96, 106], dps: [22, 30, 40, 52, 66], dur: [3, 3.5, 3.5, 4, 4.5], amp: [0.15, 0.15, 0.2, 0.2, 0.25] },
-  R: { name: '모래폭풍', max: 3, cd: [70, 60, 50], dur: [9, 11, 13], pct: [0.03, 0.04, 0.05], dr: [0.25, 0.3, 0.35] }
+// Each champion has its own Q/E/R; W is the shared augment slot.
+const SKS = {
+  nasus: {
+    Q: { name: '사냥의 일격', max: 5, base: [30, 45, 60, 80, 100], cd: [2.0, 1.8, 1.6, 1.4, 1.2], extra: [0, 0, 1, 1, 2], range: [46, 46, 54, 54, 62] },
+    E: { name: '영혼의 불꽃', max: 5, cd: [7, 6.5, 6, 5.5, 5], radius: [72, 80, 88, 96, 106], dps: [22, 30, 40, 52, 66], dur: [3, 3.5, 3.5, 4, 4.5], amp: [0.15, 0.15, 0.2, 0.2, 0.25] },
+    R: { name: '모래폭풍', max: 3, cd: [70, 60, 50], dur: [9, 11, 13], pct: [0.03, 0.04, 0.05], dr: [0.25, 0.3, 0.35] }
+  },
+  veigar: {
+    Q: { name: '사악한 일격', max: 5, base: [40, 60, 80, 100, 125], cd: [1.8, 1.6, 1.4, 1.2, 1.0], extra: [1, 1, 2, 2, 3], range: [230, 230, 250, 250, 270] },
+    E: { name: '사건의 지평선', max: 5, cd: [10, 9.5, 9, 8.5, 8], radius: [80, 86, 92, 98, 106], stun: [1.0, 1.1, 1.2, 1.3, 1.5], dur: [3, 3, 3.5, 3.5, 4], amp: [0.15, 0.15, 0.2, 0.2, 0.25] },
+    R: { name: '태초의 폭발', max: 3, cd: [40, 32, 24], base: [250, 400, 550], ratio: [1.0, 1.2, 1.4], range: 300 }
+  }
 };
+let SK = SKS[champ];
+const CHAMPS = {
+  nasus:  { name: '나서스', hp: 700, spd: 165, r: 16, aaRange: 18, aaBase: 22, aaPer: 6, aaRate: 0.7, gain: { melee: 3, caster: 3, cannon: 6, super: 12, boss: 12 } },
+  veigar: { name: '베이가', hp: 520, spd: 160, r: 13, aaRange: 150, aaBase: 16, aaPer: 4, aaRate: 0.85, gain: { melee: 2, caster: 2, cannon: 4, super: 8, boss: 10 } }
+};
+const CHP = () => CHAMPS[S.champ];
 function descSkill(k, lv) {
-  const d = SK[k], i = lv - 1, j = lv - 2;
+  const d = SK[k], i = lv - 1, j = lv - 2, vg = S.champ === 'veigar';
   if (k === 'Q') {
+    if (lv === 1) return vg ? `적을 ${1 + d.extra[0]}명까지 관통하는 마법탄. 처치하면 스택` : `다음 공격이 강해집니다. 처치하면 스택`;
     let s = `피해 ${d.base[j]}→${d.base[i]} + 스택 · 대기 ${fmt(d.cd[j])}→${fmt(d.cd[i])}초`;
-    if (d.extra[i] > d.extra[j]) s += ` · 한 번에 ${1 + d.extra[i]}명 타격`;
+    if (d.extra[i] > d.extra[j]) s += vg ? ` · ${1 + d.extra[i]}명 관통` : ` · 한 번에 ${1 + d.extra[i]}명 타격`;
     else if (d.range[i] > d.range[j]) s += ' · 사거리 증가';
     return s;
+  }
+  if (k === 'E' && vg) {
+    if (lv === 1) return `적이 모인 곳에 결계. 테두리에 닿은 적은 ${fmt(d.stun[0])}초 기절, 기절한 적은 받는 피해 +${pct(d.amp[0])}`;
+    return `기절 ${fmt(d.stun[j])}→${fmt(d.stun[i])}초 · 범위 ${d.radius[j]}→${d.radius[i]} · 지속 ${fmt(d.dur[j])}→${fmt(d.dur[i])}초` + (d.amp[i] > d.amp[j] ? ` · 받는 피해 +${pct(d.amp[i])}` : '');
+  }
+  if (k === 'R' && vg) {
+    if (lv === 1) return `주변에서 가장 강한 적에게 ${d.base[0]}(레벨 비례) + 스택×${d.ratio[0]} 피해. 잃은 체력이 많을수록 최대 2배. 처치하면 스택`;
+    return `피해 ${d.base[j]}→${d.base[i]} · 스택 계수 ${d.ratio[j]}→${d.ratio[i]} · 대기 ${d.cd[j]}→${d.cd[i]}초`;
   }
   if (k === 'E') {
     if (lv === 1) return `적이 모인 곳에 불꽃 장판. 초당 ${d.dps[0]} 피해(레벨 비례), 장판 위 적은 받는 피해 +${pct(d.amp[0])}`;
@@ -481,24 +523,24 @@ const cdr = () => 1 - 0.06 * pa('haste');
 const pAmp = () => 1 + 0.12 * pa('glass');
 const qDmg = () => SK.Q.base[S.sk.Q - 1] + S.stacks;
 const qRange = () => SK.Q.range[S.sk.Q - 1] + 8 * pa('scope');
-const aaReach = () => 18 + 8 * pa('scope');
+const aaReach = () => CHP().aaRange + 8 * pa('scope');
 const qCdFull = () => SK.Q.cd[S.sk.Q - 1] * cdr() * (S.ult > 0 ? 0.5 : 1);
-const aaDmg = () => 22 + 6 * (S.lvl - 1);
+const aaDmg = () => CHP().aaBase + CHP().aaPer * (S.lvl - 1);
 const excited = () => (S.exT > S.t ? 0.08 + 0.06 * pa('excited') : 0);
 const tapStacks = () => (S.tapT > S.t ? S.tapN : 0);
-const aaRate = () => 0.7 / ((1 + excited()) * (1 + 0.05 * pa('tapdancer')));
+const aaRate = () => CHP().aaRate / ((1 + excited()) * (1 + 0.05 * pa('tapdancer')));
 const pScale = () => (S.ult > 0 ? 1.4 : 1);
 const lvScale = () => 1 + 0.15 * (S.lvl - 1);
-const moveSpd = () => 165 * (1 + 0.06 * pa('swift')) * (1 + excited()) * (1 + 0.01 * pa('tapdancer') * tapStacks()) * (S.ult > 0 ? 1.1 : 1) * (S.p.slowT > S.t ? 1 - S.p.slow : 1);
+const moveSpd = () => CHP().spd * (1 + 0.06 * pa('swift')) * (1 + excited()) * (1 + 0.01 * pa('tapdancer') * tapStacks()) * (S.ult > 0 ? 1.1 : 1) * (S.p.slowT > S.t ? 1 - S.p.slow : 1);
 const magR = () => 70 * (1 + 0.4 * pa('coin'));
-const maxHp = () => Math.round(700 * (1 + 0.15 * pa('giant')) * (pa('glass') ? 0.8 : 1));
+const maxHp = () => Math.round(CHP().hp * (1 + 0.15 * pa('giant')) * (pa('glass') ? 0.8 : 1));
 const xpNeed = (l) => 5 + 6 * (l - 1) + Math.floor(Math.pow(l - 1, 1.6));
 const skLv = (k) => (k === 'W' ? S.wa.lv : S.sk[k]);
 const skMax = (k) => (k === 'W' ? WA_MAX : SK[k].max);
 
 function newRun(demo) {
   return {
-    demo, t: 0, nid: 1, nextSpawn: 0.3, nextRing: 75, nextBoss: 120, bossN: 0, bossKills: [],
+    demo, champ, t: 0, nid: 1, nextSpawn: 0.3, nextRing: 75, nextBoss: 120, bossN: 0, bossKills: [],
     kills: 0, qKills: 0, stacks: 0, lvl: 1, xp: 0, pending: 0, offer: null, rerolls: 2,
     sk: demo ? { Q: 3, E: 2, R: 0 } : { Q: 1, E: 0, R: 0 },
     wa: demo ? { k: 'firefox', lv: 3, ang: 0 } : { k: null, lv: 0, ang: 0 },
@@ -506,7 +548,7 @@ function newRun(demo) {
     cd: { Q: 0, W: 0, E: 0, R: 0 }, cdTot: { Q: 1, W: 1, E: 1, R: 1 },
     qCharged: 0, qReadyT: 0, qHot: false, ult: 0, ultTot: 1, auraT: 0,
     exT: 0, tapN: 0, tapT: 0, shield: 0, shieldT: 0, dawnCd: 0, dawnT: 0, dawnRate: 0, hurtAcc: 0, hurtTxtT: 0,
-    p: { x: 0, y: 0, r: 16, hp: 700, max: 700, face: -Math.PI / 2, aa: 0.5, swing: 0, walk: 0, qGlow: 0, vx: 0, vy: 0, slowT: 0, slow: 0 },
+    p: { x: 0, y: 0, r: CHAMPS[champ].r, hp: CHAMPS[champ].hp, max: CHAMPS[champ].hp, face: -Math.PI / 2, aa: 0.5, swing: 0, walk: 0, qGlow: 0, vx: 0, vy: 0, slowT: 0, slow: 0 },
     cam: { x: 0, y: 0 }, camOff: 0,
     mins: [], shots: [], pshots: [], strikes: [], zones: [], teles: [], gems: [], drops: [], fx: [], motes: [], texts: [],
     shake: 0, hurtFlash: 0
@@ -798,7 +840,7 @@ function pickQTargets(onlyKill) {
     if (d > R + m.r + range) continue;
     const kill = qKillable(m, dmg);
     if (onlyKill && !kill) continue;
-    out.push({ m, s: (kill ? 1000 + ET[m.k].stack * 20 : 0) - d });
+    out.push({ m, s: (kill ? 1000 + CHP().gain[m.k] * 20 : 0) - d });
   }
   out.sort((x, y) => y.s - x.s);
   return out.slice(0, 1 + SK.Q.extra[S.sk.Q - 1]).map((o) => o.m);
@@ -823,14 +865,22 @@ function fireQ(ts) {
   p.face = Math.atan2(t0.y - p.y, t0.x - p.x); p.swing = 1; p.qGlow = 0.3;
   S.cdTot.Q = S.cd.Q = qCdFull(); S.qCharged = 0;
   p.aa = Math.max(p.aa, 0.4);
+  if (S.champ === 'veigar') {
+    S.pshots.push({ kind: 'vq', x: p.x, y: p.y, vx: Math.cos(p.face), vy: Math.sin(p.face), spd: 640, dist: 0, range: qRange() + 30, r: 9, dmg, left: 1 + SK.Q.extra[S.sk.Q - 1], hits: {}, life: 2 });
+    sfx.q(); return;
+  }
   ts.forEach((t, i) => {
     S.fx.push({ kind: 'qslash', x: t.x, y: t.y, a: Math.atan2(t.y - p.y, t.x - p.x), t: 0, life: 0.34, r: t.r + 12 });
     if (i > 0) S.fx.push({ kind: 'link', x0: t0.x, y0: t0.y, x1: t.x, y1: t.y, t: 0, life: 0.22 });
-    if (t.hp <= t.max * execThr(t) && effDmg(t, dmg) < t.hp) { addText(t.x, t.y - t.r - 14, '처형', '#ff6b74', 15); t.hp = 0; kill(t, 'q'); return; }
-    const crit = Math.random() < 0.08 * pa('crit'), dd = dmg * (crit ? 1.75 : 1), e = effDmg(t, dd);
-    if (!hit(t, dd, 'q')) addText(t.x, t.y - t.r - 12, String(Math.round(e)), crit ? '#ffb347' : '#f1e8d8', crit ? 17 : 14);
+    qStrike(t, dmg);
   });
   sfx.q();
+}
+// One Q hit on one target: execute check, crit roll, damage number.
+function qStrike(t, dmg) {
+  if (t.hp <= t.max * execThr(t) && effDmg(t, dmg) < t.hp) { addText(t.x, t.y - t.r - 14, '처형', '#ff6b74', 15); t.hp = 0; kill(t, 'q'); return; }
+  const crit = Math.random() < 0.08 * pa('crit'), dd = dmg * (crit ? 1.75 : 1), e = effDmg(t, dd);
+  if (!hit(t, dd, 'q')) addText(t.x, t.y - t.r - 12, String(Math.round(e)), crit ? '#ffb347' : '#f1e8d8', crit ? 17 : 14);
 }
 function deny(k) { const b = btn[k].el; b.classList.remove('deny'); void b.offsetWidth; b.classList.add('deny'); sfx.deny(); }
 function castQ() {
@@ -857,14 +907,44 @@ function castE(c) {
   if (!S.sk.E || S.cd.E > 0) { if (mode === 'play') deny('E'); return false; }
   const i = S.sk.E - 1, at = c || bestCluster() || { x: S.p.x, y: S.p.y };
   S.cdTot.E = S.cd.E = SK.E.cd[i] * cdr();
-  S.zones.push({ x: at.x, y: at.y, r: SK.E.radius[i], dps: SK.E.dps[i] * lvScale(), amp: SK.E.amp[i], t: 0, life: SK.E.dur[i], tick: 0 });
+  if (S.champ === 'veigar') {
+    const z = { kind: 'cage', x: at.x, y: at.y, r: SK.E.radius[i], stun: SK.E.stun[i], amp: SK.E.amp[i], t: 0, life: SK.E.dur[i], tick: 0 };
+    S.zones.push(z);
+    for (const m of S.mins) if (!m.dead && Math.hypot(m.x - z.x, m.y - z.y) < z.r + m.r) cageStun(m, z);
+  } else S.zones.push({ x: at.x, y: at.y, r: SK.E.radius[i], dps: SK.E.dps[i] * lvScale(), amp: SK.E.amp[i], t: 0, life: SK.E.dur[i], tick: 0 });
   sfx.e();
   return true;
+}
+// Event-horizon stun: bosses get a shorter one; stunned enemies take extra damage.
+function cageStun(m, z) {
+  const d = m.k === 'boss' ? z.stun * 0.4 : z.stun;
+  m.stunT = Math.max(m.stunT, S.t + d); m.cageT = S.t + d + 0.3;
+  m.burnT = m.stunT; m.burn = z.amp;
+}
+function veigarR(i) {
+  const p = S.p;
+  let tgt = null, bestV = -1;
+  for (const m of S.mins) {
+    if (m.dead || Math.hypot(m.x - p.x, m.y - p.y) > SK.R.range + m.r) continue;
+    const v = (m.k === 'boss' ? 1e9 : 0) + m.hp;
+    if (v > bestV) { bestV = v; tgt = m; }
+  }
+  if (!tgt) { deny('R'); return; }
+  S.cdTot.R = S.cd.R = SK.R.cd[i] * cdr();
+  const missing = 1 - clamp(tgt.hp / tgt.max, 0, 1);
+  const dmg = (SK.R.base[i] * lvScale() + SK.R.ratio[i] * S.stacks) * (1 + missing), e = effDmg(tgt, dmg);
+  p.face = Math.atan2(tgt.y - p.y, tgt.x - p.x); p.swing = 1;
+  S.fx.push({ kind: 'vr', x0: p.x, y0: p.y, x1: tgt.x, y1: tgt.y, t: 0, life: 0.4 });
+  S.fx.push({ kind: 'ring', x: tgt.x, y: tgt.y, t: 0, life: 0.6, r0: 10, r1: 90, c: '190,150,255', w: 8 });
+  burst(tgt.x, tgt.y, '200,160,255', 24); S.shake = 8;
+  if (!hit(tgt, dmg, 'r')) addText(tgt.x, tgt.y - tgt.r - 14, String(Math.round(e)), '#d6b8ff', 20);
+  sfx.ult();
 }
 function castR() {
   if (mode !== 'play') return;
   if (!S.sk.R || S.cd.R > 0 || S.ult > 0) { deny('R'); return; }
   const i = S.sk.R - 1, p = S.p;
+  if (S.champ === 'veigar') { veigarR(i); return; }
   S.ult = S.ultTot = SK.R.dur[i]; S.auraT = 0;
   S.cdTot.R = S.cd.R = SK.R.cd[i] * cdr();
   S.cd.Q = Math.min(S.cd.Q, qCdFull());
@@ -959,8 +1039,15 @@ function updateWA(dt) {
       if (!m) { s.life = 0; continue; }
       const dx = m.x - s.x, dy = m.y - s.y, d = Math.hypot(dx, dy) || 1, st = s.spd * dt;
       s.px = s.x; s.py = s.y;
-      if (d <= st + m.r) { hit(m, s.dmg, 'w'); s.life = 0; burst(m.x, m.y, '140,220,255', 4); }
+      if (d <= st + m.r) { if (s.aa) aaImpact(m, s.dmg); else hit(m, s.dmg, 'w'); s.life = 0; burst(m.x, m.y, s.aa ? '190,150,255' : '140,220,255', 4); }
       else { s.x += dx / d * st; s.y += dy / d * st; }
+    } else if (s.kind === 'vq') {
+      const st = s.spd * dt; s.x += s.vx * st; s.y += s.vy * st; s.dist += st;
+      for (const m of S.mins) {
+        if (m.dead || s.hits[m.id] || Math.abs(m.x - s.x) > m.r + 24 || Math.abs(m.y - s.y) > m.r + 24) continue;
+        if (Math.hypot(m.x - s.x, m.y - s.y) < m.r + s.r) { s.hits[m.id] = 1; qStrike(m, s.dmg); burst(m.x, m.y, '200,160,255', 6); if (--s.left <= 0) { s.life = 0; break; } }
+      }
+      if (s.dist >= s.range) s.life = 0;
     } else if (s.kind === 'boomer') {
       if (!s.back) { s.x += s.vx * s.spd * dt; s.y += s.vy * s.spd * dt; s.dist += s.spd * dt; if (s.dist >= 260) { s.back = true; s.hits = {}; } }
       else { const dx = p.x - s.x, dy = p.y - s.y, d = Math.hypot(dx, dy) || 1; s.x += dx / d * s.spd * 1.15 * dt; s.y += dy / d * s.spd * 1.15 * dt; if (d < 24) s.life = 0; }
@@ -1016,11 +1103,8 @@ function updatePlayer(dt) {
     const t = pickAATarget();
     if (t) {
       p.face = Math.atan2(t.y - p.y, t.x - p.x); p.swing = 1; p.aa = aaRate();
-      S.fx.push({ kind: 'swing', x: p.x, y: p.y, a: p.face, t: 0, life: 0.16, r: p.r * pScale() + 18 });
-      const crit = Math.random() < 0.08 * pa('crit');
-      if (pa('firebrand')) { t.fbT = S.t + 3; t.fbD = (t.k === 'boss' ? 0.3 : 1) * 0.015 * pa('firebrand') * t.max + 5; }
-      if (pa('tapdancer')) { S.tapN = Math.min(10, tapStacks() + 1); S.tapT = S.t + 2.5; }
-      hit(t, aaDmg() * (crit ? 1.75 : 1), 'aa');
+      if (S.champ === 'veigar') S.pshots.push({ kind: 'bolt', aa: true, x: p.x, y: p.y, px: p.x, py: p.y, tid: t.id, dmg: aaDmg(), spd: 520, life: 1.2 });
+      else { S.fx.push({ kind: 'swing', x: p.x, y: p.y, a: p.face, t: 0, life: 0.16, r: p.r * pScale() + 18 }); aaImpact(t, aaDmg()); }
     }
   }
   if (p.hp < p.max) p.hp = Math.min(p.max, p.hp + p.max * 0.0035 * dt);
@@ -1037,6 +1121,14 @@ function updatePlayer(dt) {
     }
   }
 }
+// A basic attack landing: crit roll plus the on-hit augments.
+function aaImpact(t, base) {
+  if (t.dead) return;
+  const crit = Math.random() < 0.08 * pa('crit');
+  if (pa('firebrand')) { t.fbT = S.t + 3; t.fbD = (t.k === 'boss' ? 0.3 : 1) * 0.015 * pa('firebrand') * t.max + 5; }
+  if (pa('tapdancer')) { S.tapN = Math.min(10, tapStacks() + 1); S.tapT = S.t + 2.5; }
+  hit(t, base * (crit ? 1.75 : 1), 'aa');
+}
 function hit(m, dmg, src) {
   if (m.dead) return false;
   const d = effDmg(m, dmg), dealt = Math.min(d, Math.max(0, m.hp));
@@ -1048,10 +1140,10 @@ function hit(m, dmg, src) {
 function toScreen(x, y) { return { x: (x - S.cam.x) * Z + W / 2, y: (y - S.cam.y) * Z + H / 2 }; }
 function kill(m, src) {
   m.dead = true; S.kills++;
-  const E = ET[m.k], q = src === 'q';
+  const E = ET[m.k], q = src === 'q' || src === 'r';
   if (pa('excited')) S.exT = S.t + 3;
   if (q) {
-    const gain = E.stack + Math.floor((pa('souleater') + 1) / 2);
+    const gain = CHP().gain[m.k] + Math.floor((pa('souleater') + 1) / 2);
     S.stacks += gain; S.qKills++;
     addText(m.x, m.y - m.r - 6, '+' + gain, GOLD, 17 + gain * 0.8);
     burst(m.x, m.y, '243,195,79', 8 + E.stack);
@@ -1132,6 +1224,14 @@ function updateZones(dt) {
   for (const z of S.zones) {
     z.t += dt; z.tick -= dt;
     if (z.tick > 0) continue;
+    if (z.kind === 'cage') {
+      z.tick = 0.1;
+      for (const m of S.mins) {
+        if (m.dead || m.cageT > S.t) continue;
+        if (Math.abs(Math.hypot(m.x - z.x, m.y - z.y) - z.r) < m.r + 6) cageStun(m, z);
+      }
+      continue;
+    }
     z.tick = 0.25;
     for (const m of S.mins) {
       if (m.dead || Math.hypot(m.x - z.x, m.y - z.y) > z.r + m.r * 0.5) continue;
@@ -1164,7 +1264,7 @@ function updateFx(dt) {
   if (S.hurtTxtT <= 0 && S.hurtAcc >= 1) { addText(S.p.x + rand(-8, 8), S.p.y - 28, '-' + Math.round(S.hurtAcc), '#ff6a5a', 16); S.hurtAcc = 0; S.hurtTxtT = 0.25; }
 }
 function resetDemo() {
-  S = newRun(true); S.camOff = VH * 0.2; S.cam = { x: 0, y: S.camOff };
+  SK = SKS[champ]; S = newRun(true); S.camOff = VH * 0.2; S.cam = { x: 0, y: S.camOff };
   for (let i = 0; i < 150; i++) update(1 / 30);
 }
 function update(dt) {
@@ -1370,7 +1470,50 @@ function drawBones(x, y, s, v) {
   ctx.fillStyle = '#3a2c22'; circle(16.5, -1.5, 1.4); ctx.fill(); circle(19.5, -1.5, 1.4); ctx.fill();
   ctx.restore();
 }
+function drawVeigar() {
+  const p = S.p, R = p.r, f = p.face, c = Math.cos(f), n = Math.sin(f);
+  const glow = S.qCharged > 0 || p.qGlow > 0, ready = S.cd.Q <= 0;
+  ctx.save(); ctx.translate(p.x, p.y);
+  if (mode === 'over') ctx.globalAlpha = 0.45;
+  ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(0, R * 0.8, R * 1.2, R * 0.5, 0, 0, TAU); ctx.fill();
+  if (S.shield > 0) { ctx.strokeStyle = 'rgba(241,232,216,.75)'; ctx.lineWidth = 2.5; circle(0, 0, R + 9); ctx.stroke(); }
+  ctx.translate(0, Math.sin(p.walk) * 0.8);
+  // staff with a crystal, raised toward the facing direction while casting
+  const hx = Math.cos(f + 1.2) * R * 0.9, hy = Math.sin(f + 1.2) * R * 0.9, sa = f + 0.25 - p.swing * 0.5;
+  const tx = hx + Math.cos(sa) * R * 1.9, ty = hy + Math.sin(sa) * R * 1.9;
+  ctx.lineCap = 'round'; ctx.strokeStyle = '#5a4630'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(hx - Math.cos(sa) * R * 0.5, hy - Math.sin(sa) * R * 0.5); ctx.lineTo(tx, ty); ctx.stroke();
+  if (glow || ready) { ctx.globalAlpha = glow ? 0.6 : 0.3; circle(tx, ty, R * (glow ? 1.1 : 0.8)); ctx.fillStyle = '#c9a0ff'; ctx.fill(); ctx.globalAlpha = mode === 'over' ? 0.45 : 1; }
+  circle(tx, ty, R * 0.38); ctx.fillStyle = glow ? '#fff1c4' : '#b48cff'; ctx.fill();
+  // robe
+  circle(0, 0, R); ctx.fillStyle = '#35265f'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = GOLD; ctx.stroke();
+  // pointed hat: wide brim, tip leaning back
+  ctx.save(); ctx.rotate(f);
+  ctx.beginPath(); ctx.ellipse(R * 0.1, 0, R * 1.35, R * 1.15, 0, 0, TAU); ctx.fillStyle = '#231842'; ctx.fill();
+  ctx.strokeStyle = '#4a3680'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(R * 0.55, -R * 0.62); ctx.quadraticCurveTo(-R * 0.6, -R * 0.4, -R * 2.0, R * 0.25); ctx.quadraticCurveTo(-R * 0.6, R * 0.1, R * 0.55, R * 0.62); ctx.closePath();
+  ctx.fillStyle = '#2d1f55'; ctx.fill();
+  ctx.strokeStyle = GOLD; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(R * 0.1, 0, R * 0.62, Math.PI * 0.55, Math.PI * 1.45); ctx.stroke();
+  ctx.restore();
+  // glowing eyes under the brim
+  ctx.fillStyle = '#ffe36a';
+  for (const sd of [1, -1]) { const a = f + sd * 0.42; circle(Math.cos(a) * R * 0.78, Math.sin(a) * R * 0.78, Math.max(1.6, R * 0.17)); ctx.fill(); }
+  ctx.restore();
+}
+function drawCage(z) {
+  const a = Math.min(1, z.t * 6, (z.life - z.t) * 4);
+  ctx.save(); ctx.globalAlpha = a; ctx.translate(z.x, z.y);
+  ctx.fillStyle = 'rgba(120,80,220,.12)'; circle(0, 0, z.r); ctx.fill();
+  ctx.strokeStyle = 'rgba(190,150,255,.95)'; ctx.lineWidth = 4; circle(0, 0, z.r); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,227,106,.8)'; ctx.lineWidth = 2;
+  for (let i = 0; i < 12; i++) {
+    const ang = i / 12 * TAU - S.t * 0.8, x = Math.cos(ang) * z.r, y = Math.sin(ang) * z.r, h = 7 + Math.sin(S.t * 10 + i) * 2;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(ang) * h, y + Math.sin(ang) * h); ctx.stroke();
+  }
+  ctx.restore();
+}
 function drawPlayer() {
+  if (S.champ === 'veigar') { drawVeigar(); return; }
   const p = S.p, R = p.r * pScale(), f = p.face, c = Math.cos(f), n = Math.sin(f);
   const glow = S.qCharged > 0 || p.qGlow > 0, ready = S.cd.Q <= 0;
   ctx.save(); ctx.translate(p.x, p.y);
@@ -1426,6 +1569,7 @@ function drawAura() {
   ctx.setLineDash([]);
 }
 function drawZone(z) {
+  if (z.kind === 'cage') { drawCage(z); return; }
   const a = Math.min(1, z.t * 6, (z.life - z.t) * 4);
   ctx.save(); ctx.globalAlpha = a; ctx.translate(z.x, z.y);
   ctx.drawImage(zoneSpr, -z.r, -z.r, z.r * 2, z.r * 2);
@@ -1488,10 +1632,15 @@ function drawStrike(k) {
 }
 function drawPShot(s) {
   if (s.kind === 'bolt') {
-    ctx.strokeStyle = 'rgba(160,230,255,.9)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    ctx.strokeStyle = s.aa ? 'rgba(200,160,255,.9)' : 'rgba(160,230,255,.9)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(s.px, s.py); ctx.lineTo(s.x, s.y); ctx.stroke();
-    ctx.globalAlpha = 0.4; circle(s.x, s.y, 8); ctx.fillStyle = '#7fd4ff'; ctx.fill(); ctx.globalAlpha = 1;
+    ctx.globalAlpha = 0.4; circle(s.x, s.y, 8); ctx.fillStyle = s.aa ? '#b48cff' : '#7fd4ff'; ctx.fill(); ctx.globalAlpha = 1;
     circle(s.x, s.y, 3.5); ctx.fillStyle = '#ffffff'; ctx.fill();
+  } else if (s.kind === 'vq') {
+    for (let k = 1; k <= 4; k++) { ctx.globalAlpha = 0.18 * (5 - k) / 4; circle(s.x - s.vx * k * 9, s.y - s.vy * k * 9, s.r * (1 - k * 0.12)); ctx.fillStyle = '#b48cff'; ctx.fill(); }
+    ctx.globalAlpha = 0.45; circle(s.x, s.y, s.r * 1.8); ctx.fillStyle = '#9b6bff'; ctx.fill(); ctx.globalAlpha = 1;
+    circle(s.x, s.y, s.r); ctx.fillStyle = '#e8d8ff'; ctx.fill();
+    circle(s.x, s.y, s.r * 0.45); ctx.fillStyle = '#ffe36a'; ctx.fill();
   } else if (s.kind === 'boomer') {
     ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.rot);
     ctx.fillStyle = '#c9893e'; ctx.strokeStyle = '#5a3a14'; ctx.lineWidth = 2;
@@ -1709,6 +1858,12 @@ function drawFxWorld() {
       circle(f.x, f.y, f.r0 + (f.r1 - f.r0) * (1 - (1 - k) * (1 - k))); ctx.stroke();
     } else if (f.kind === 'link' || f.kind === 'blade') {
       ctx.strokeStyle = f.kind === 'blade' ? `rgba(225,232,245,${1 - k})` : `rgba(255,230,150,${1 - k})`; ctx.lineWidth = f.kind === 'blade' ? 3 : 2;
+      ctx.beginPath(); ctx.moveTo(f.x0, f.y0); ctx.lineTo(f.x1, f.y1); ctx.stroke();
+    } else if (f.kind === 'vr') {
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = `rgba(155,107,255,${0.7 * (1 - k)})`; ctx.lineWidth = 16 * (1 - k) + 2;
+      ctx.beginPath(); ctx.moveTo(f.x0, f.y0); ctx.lineTo(f.x1, f.y1); ctx.stroke();
+      ctx.strokeStyle = `rgba(255,240,200,${1 - k})`; ctx.lineWidth = 4 * (1 - k) + 1;
       ctx.beginPath(); ctx.moveTo(f.x0, f.y0); ctx.lineTo(f.x1, f.y1); ctx.stroke();
     } else if (f.kind === 'lob') {
       const x = f.x0 + (f.x1 - f.x0) * k, y = f.y0 + (f.y1 - f.y0) * k - Math.sin(k * Math.PI) * 90;
@@ -1955,9 +2110,9 @@ async function submitScore(row) {
   const res = await fetch(SUPA.url + '/rest/v1/scores', { method: 'POST', headers: supaHeaders({ Prefer: 'return=minimal' }), body: JSON.stringify(row) });
   if (!res.ok) throw new Error('HTTP ' + res.status);
 }
-// Best run per name (case-insensitive), highest stacks first.
-async function fetchBoard() {
-  const res = await fetch(SUPA.url + '/rest/v1/scores?select=name,stacks,time_sec,lvl,kills&order=stacks.desc,time_sec.desc&limit=500', { headers: supaHeaders() });
+// Best run per name (case-insensitive) for one champion, longest survival first.
+async function fetchBoard(c) {
+  const res = await fetch(SUPA.url + '/rest/v1/scores?select=name,stacks,time_sec,lvl,kills&champ=eq.' + c + '&order=time_sec.desc,stacks.desc&limit=500', { headers: supaHeaders() });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const rows = await res.json(), seen = new Set(), out = [];
   for (const r of rows) { const k = String(r.name).trim().toLowerCase(); if (seen.has(k)) continue; seen.add(k); out.push(r); }
@@ -1972,28 +2127,36 @@ function renderBoard(list) {
     if (me && String(r.name).toLowerCase() === me) li.className = 'me';
     const rk = document.createElement('span'); rk.className = 'rk'; rk.textContent = String(i + 1);
     const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = r.name;
-    const sub = document.createElement('span'); sub.className = 'sub2'; sub.textContent = fmtTime(r.time_sec) + ' 생존 · Lv ' + r.lvl + ' · 처치 ' + r.kills; nm.appendChild(sub);
-    const sc = document.createElement('span'); sc.className = 'sc'; sc.textContent = String(r.stacks);
+    const sub = document.createElement('span'); sub.className = 'sub2'; sub.textContent = '스택 ' + r.stacks + ' · Lv ' + r.lvl + ' · 처치 ' + r.kills; nm.appendChild(sub);
+    const sc = document.createElement('span'); sc.className = 'sc'; sc.textContent = fmtTime(r.time_sec);
     li.append(rk, nm, sc); el.rankList.appendChild(li);
   });
 }
-let rankBack = 'title';
-async function openRank(from) {
-  rankBack = from || rankBack; showOnly(el.rank);
+let rankBack = 'title', rankChamp = 'nasus', rankReq = 0;
+async function openRank(from, c) {
+  if (from) rankBack = from;
+  rankChamp = c || rankChamp;
+  for (const t of document.querySelectorAll('.rtab')) t.setAttribute('aria-selected', t.dataset.c === rankChamp ? 'true' : 'false');
+  showOnly(el.rank);
   if (!rankOn()) { el.rankList.textContent = ''; el.rankNote.textContent = '랭킹 서버를 아직 연결하지 않았습니다.'; return; }
+  const req = ++rankReq;
   el.rankNote.textContent = '불러오는 중…';
-  try { const list = await fetchBoard(); renderBoard(list); el.rankNote.textContent = '스택 기준 · 이름마다 최고 기록 · ' + list.length + '명'; }
-  catch (e) { el.rankNote.textContent = '랭킹을 불러오지 못했습니다. 인터넷 연결을 확인하고 새로고침을 눌러 주세요.'; }
+  try {
+    const list = await fetchBoard(rankChamp);
+    if (req !== rankReq) return;
+    renderBoard(list); el.rankNote.textContent = '생존 시간 기준 · 이름마다 최고 기록 · ' + list.length + '명';
+  } catch (e) { if (req === rankReq) { el.rankList.textContent = ''; el.rankNote.textContent = '랭킹을 불러오지 못했습니다. 인터넷 연결을 확인하고 새로고침을 눌러 주세요.'; } }
 }
 function reportScore() {
   el.rankStatus.textContent = '';
   if (!rankOn() || S.demo) return;
   if (S.t < 5) { el.rankStatus.textContent = '5초 이상 버틴 기록만 랭킹에 올라갑니다.'; return; }
-  const row = { name: playerName() || '이름 없음', stacks: clamp(S.stacks | 0, 0, 999999), time_sec: clamp(Math.floor(S.t), 0, 36000), lvl: clamp(S.lvl, 1, 200), kills: clamp(S.kills, 0, 999999) };
-  el.rankStatus.textContent = '랭킹에 기록을 올리는 중…';
-  submitScore(row).then(fetchBoard).then((list) => {
+  const c = S.champ, cname = CHAMPS[c].name;
+  const row = { name: playerName() || '이름 없음', champ: c, stacks: clamp(S.stacks | 0, 0, 999999), time_sec: clamp(Math.floor(S.t), 0, 36000), lvl: clamp(S.lvl, 1, 200), kills: clamp(S.kills, 0, 999999) };
+  el.rankStatus.textContent = cname + ' 랭킹에 기록을 올리는 중…';
+  submitScore(row).then(() => fetchBoard(c)).then((list) => {
     const i = list.findIndex((r) => String(r.name).toLowerCase() === row.name.toLowerCase());
-    el.rankStatus.textContent = i >= 0 ? row.name + ' · 현재 ' + (i + 1) + '위 (최고 ' + list[i].stacks + ' 스택)' : '기록을 올렸습니다.';
+    el.rankStatus.textContent = i >= 0 ? row.name + ' · ' + cname + ' 랭킹 ' + (i + 1) + '위 (최고 ' + fmtTime(list[i].time_sec) + ' 생존)' : '기록을 올렸습니다.';
   }).catch(() => { el.rankStatus.textContent = '기록을 올리지 못했습니다. 인터넷 연결을 확인해 주세요.'; });
 }
 
@@ -2023,7 +2186,7 @@ function toTitle() {
   resetDemo();
   showOnly(playerName() ? el.title : el.gate);
   hud.classList.add('dim'); skillsEl.classList.add('dim'); el.hint.classList.add('off');
-  el.bestLine.textContent = best.stacks > 0 ? `최고 기록 · 스택 ${best.stacks} · ${fmtTime(best.time)} 생존` : '최고 기록 · 아직 없음';
+  el.bestLine.textContent = best.time > 0 ? `${CHAMPS[champ].name} 최고 기록 · ${fmtTime(best.time)} 생존 · 스택 ${best.stacks}` : `${CHAMPS[champ].name} 최고 기록 · 아직 없음`;
   endJoy();
 }
 let hintTimer = 0;
@@ -2032,6 +2195,7 @@ function startGame() {
   if (!nm) { showOnly(el.title); el.nameField.classList.remove('err'); void el.nameField.offsetWidth; el.nameField.classList.add('err'); el.nameInput.focus(); return; }
   store.set(KEY_NAME, nm); el.nameField.classList.remove('err');
   audioInit(); keepAwake();
+  SK = SKS[champ];
   S = newRun(false);
   mode = 'play';
   showOnly(null);
@@ -2047,8 +2211,9 @@ function togglePause() {
 }
 function gameOver() {
   mode = 'over'; endJoy();
-  const isBest = S.stacks > best.stacks;
-  if (isBest) { best = { stacks: S.stacks, time: Math.floor(S.t), lvl: S.lvl }; store.set(KEY_BEST, best); }
+  const isBest = Math.floor(S.t) > best.time;
+  if (isBest) { best = { stacks: S.stacks, time: Math.floor(S.t), lvl: S.lvl }; store.set(KEY_BEST + '.' + S.champ, best); }
+  $('#fChamp').textContent = CHAMPS[S.champ].name + ' 생존';
   el.fStacks.textContent = S.stacks;
   el.fTime.textContent = fmtTime(S.t);
   el.fLv.textContent = S.lvl;
@@ -2058,21 +2223,38 @@ function gameOver() {
   el.fBoss.innerHTML = S.bossKills.length ? '쓰러뜨린 보스 · <b>' + S.bossKills.join(', ') + '</b>' : '';
   el.fBoss.hidden = !S.bossKills.length;
   el.newBest.hidden = !(isBest && S.stacks > 0);
-  el.fBest.textContent = `최고 기록 · 스택 ${best.stacks} · ${fmtTime(best.time)} 생존`;
+  el.fBest.textContent = `${CHAMPS[S.champ].name} 최고 기록 · ${fmtTime(best.time)} 생존 · 스택 ${best.stacks}`;
   skillsEl.classList.add('dim'); el.hint.classList.add('off');
   reportScore();
   sfx.die();
   setTimeout(() => { if (mode === 'over') showOnly(el.over); }, 750);
 }
+const RULEQ = {
+  nasus: 'Q 처치 시 스택 <b class="g">+3</b> · 공성 <b class="g">+6</b> · 슈퍼·보스 <b class="g">+12</b>. 금색 체력바면 한 방입니다.',
+  veigar: 'Q는 적을 관통하는 마법탄. 처치 시 스택 <b class="g">+2</b> · 공성 <b class="g">+4</b> · 슈퍼 <b class="g">+8</b> · 보스 <b class="g">+10</b>. R로 처치해도 쌓입니다.'
+};
+function syncChamp() {
+  for (const b of document.querySelectorAll('.champ')) b.setAttribute('aria-checked', b.dataset.c === champ ? 'true' : 'false');
+  $('#ruleQ').innerHTML = RULEQ[champ];
+  $('#formulaNote').textContent = champ === 'veigar' ? '스택은 Q·R로 처치할 때만 쌓입니다' : '스택은 Q로 처치할 때만 쌓입니다';
+  for (const k of ['Q', 'E', 'R']) btn[k].el.setAttribute('aria-label', k + ' ' + SKS[champ][k].name);
+}
+for (const b of document.querySelectorAll('.champ')) b.addEventListener('click', () => {
+  if (champ === b.dataset.c) return;
+  champ = b.dataset.c; store.set(KEY_CHAMP, champ); best = loadBest(champ);
+  syncChamp();
+  if (mode === 'title') toTitle();
+});
 $('#btnStart').addEventListener('click', startGame);
 $('#btnAgain').addEventListener('click', startGame);
 $('#btnHome').addEventListener('click', toTitle);
 $('#btnResume').addEventListener('click', togglePause);
 $('#btnQuit').addEventListener('click', toTitle);
 $('#btnPause').addEventListener('click', togglePause);
-$('#btnRank').addEventListener('click', () => openRank('title'));
-$('#btnOverRank').addEventListener('click', () => openRank('over'));
+$('#btnRank').addEventListener('click', () => openRank('title', champ));
+$('#btnOverRank').addEventListener('click', () => openRank('over', S.champ));
 $('#btnRankRefresh').addEventListener('click', () => openRank());
+for (const t of document.querySelectorAll('.rtab')) t.addEventListener('click', () => openRank(null, t.dataset.c));
 $('#btnRankBack').addEventListener('click', () => showOnly(rankBack === 'over' ? el.over : el.title));
 el.nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); el.nameInput.blur(); startGame(); } });
 el.nameInput.addEventListener('input', () => el.nameField.classList.remove('err'));
@@ -2107,9 +2289,10 @@ const hot = window.claude && window.claude.hot;
 try { hot && hot.snapshot && hot.snapshot(() => ({ run: mode === 'play' || mode === 'paused' || mode === 'levelup' ? JSON.parse(JSON.stringify(S)) : null })); } catch (e) {}
 function boot(data) {
   buildSprites(); resize(); syncMute(); syncAuto();
-  el.nameInput.value = store.get(KEY_NAME, '');
+  el.nameInput.value = store.get(KEY_NAME, ''); syncChamp();
   if (data && data.run && data.run.p && data.run.wa && data.run.pa) {
     S = data.run; S.fx = []; S.texts = []; S.motes = []; S.offer = null;
+    S.champ = S.champ === 'veigar' ? 'veigar' : 'nasus'; SK = SKS[S.champ];
     mode = 'paused'; el.pBuild.innerHTML = buildHTML(); showOnly(el.pause);
     hud.classList.remove('dim'); skillsEl.classList.remove('dim');
   } else toTitle();
