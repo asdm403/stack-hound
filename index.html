@@ -1931,7 +1931,7 @@ addEventListener('keyup', (e) => { if (KM[e.code]) keys[KM[e.code]] = 0; });
 document.addEventListener('touchmove', (e) => { if (!e.target.closest('.overlay')) e.preventDefault(); }, { passive: false });
 
 /* ---------- online ranking (Supabase REST) ---------- */
-const SUPA = { url: "", key: "" };
+const SUPA = { url: "https://hzzpgwftzjarrlslysfh.supabase.co", key: "sb_publishable_8trFmfEAaRop92T-iobtZA_toQkM8qk" };
 const KEY_NAME = 'stackhound.name';
 const rankOn = () => !!(SUPA.url && SUPA.key);
 const playerName = () => el.nameInput.value.trim().slice(0, 12) || store.get(KEY_NAME, '');
