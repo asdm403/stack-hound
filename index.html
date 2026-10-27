@@ -250,6 +250,7 @@ h1{margin:-4px 0 0;font-family:var(--display);font-weight:400;font-size:50px;lin
     <div class="card">
       <p class="eyebrow">미니언 무리를 Q로 마무리해 스택을 쌓는 서바이벌</p>
       <h1>스택 사냥개</h1>
+      <div class="namefield" id="nameField"><label for="nameInput">내 이름 (랭킹에 표시됩니다)</label><input id="nameInput" type="text" maxlength="12" autocomplete="nickname" enterkeyhint="go" placeholder="예: 민수"></div>
       <p class="formula">Q 피해 = 기본 + <span class="g">스택</span> <small>스택은 Q로 처치할 때만 쌓입니다</small></p>
       <ul class="rules">
         <li><span class="k">이동</span><span>화면을 끌면 조이스틱. 기본 공격은 자동, 미니언에게 맞으면 체력이 빠르게 줄어듭니다.</span></li>
@@ -258,10 +259,19 @@ h1{margin:-4px 0 0;font-family:var(--display);font-weight:400;font-size:50px;lin
         <li><span class="k">증강</span><span>패시브 증강은 4칸까지 장착하고 각각 5단계까지 강화합니다. <b class="e">E</b> 장판, <b class="r">R</b>은 6레벨부터.</span></li>
         <li><span class="k">보스</span><span>2분마다 탑 프로게이머의 시그니처 챔피언이 보스로 등장합니다.</span></li>
       </ul>
-      <div class="namefield" id="nameField"><label for="nameInput">이름 (랭킹에 표시됩니다)</label><input id="nameInput" type="text" maxlength="12" autocomplete="nickname" enterkeyhint="go" placeholder="예: 민수"></div>
       <div class="row2"><button class="cta" id="btnStart" type="button">시작</button><button class="ghost" id="btnRank" type="button">랭킹</button></div>
       <p class="meta" id="bestLine">최고 기록 · 아직 없음</p>
       <p class="meta pc">PC: WASD 이동 · Q 또는 Space · F(W) · E · R · 레벨업 1/2/3</p>
+    </div>
+  </section>
+
+  <section id="gate" class="overlay center gut" hidden>
+    <div class="card">
+      <p class="eyebrow">처음 오셨네요</p>
+      <h1>스택 사냥개</h1>
+      <div class="namefield" id="gateField"><label for="gateInput">랭킹에 표시할 이름을 적어 주세요</label><input id="gateInput" type="text" maxlength="12" autocomplete="nickname" enterkeyhint="done" placeholder="예: 민수"></div>
+      <button class="cta" id="btnGate" type="button">확인</button>
+      <p class="meta">이름은 이 기기에 저장되고, 첫 화면에서 언제든 바꿀 수 있습니다.</p>
     </div>
   </section>
 
@@ -338,7 +348,8 @@ const el = {
   title: $('#title'), pause: $('#pause'), over: $('#over'), levelup: $('#levelup'), opts: $('#opts'), luLv: $('#luLv'), luSub: $('#luSub'), luBuild: $('#luBuild'), reroll: $('#btnReroll'), pBuild: $('#pBuild'),
   bestLine: $('#bestLine'), fStacks: $('#fStacks'), fTime: $('#fTime'), fLv: $('#fLv'), fKills: $('#fKills'), fQ: $('#fQ'), fBuild: $('#fBuild'), fBoss: $('#fBoss'), fBest: $('#fBest'), newBest: $('#newBest'),
   mute: $('#btnMute'),
-  nameInput: $('#nameInput'), nameField: $('#nameField'), rank: $('#rank'), rankList: $('#rankList'), rankNote: $('#rankNote'), rankStatus: $('#rankStatus')
+  nameInput: $('#nameInput'), nameField: $('#nameField'), rank: $('#rank'), rankList: $('#rankList'), rankNote: $('#rankNote'), rankStatus: $('#rankStatus'),
+  gate: $('#gate'), gateInput: $('#gateInput'), gateField: $('#gateField')
 };
 const TAU = Math.PI * 2;
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2006,11 +2017,11 @@ function resize() {
 }
 let wakeLock = null;
 function keepAwake() { try { navigator.wakeLock && navigator.wakeLock.request('screen').then((l) => { wakeLock = l; }).catch(() => {}); } catch (e) {} }
-function showOnly(section) { for (const s of [el.title, el.pause, el.over, el.levelup, el.rank]) s.hidden = s !== section; }
+function showOnly(section) { for (const s of [el.title, el.pause, el.over, el.levelup, el.rank, el.gate]) s.hidden = s !== section; }
 function toTitle() {
   mode = 'title';
   resetDemo();
-  showOnly(el.title);
+  showOnly(playerName() ? el.title : el.gate);
   hud.classList.add('dim'); skillsEl.classList.add('dim'); el.hint.classList.add('off');
   el.bestLine.textContent = best.stacks > 0 ? `최고 기록 · 스택 ${best.stacks} · ${fmtTime(best.time)} 생존` : '최고 기록 · 아직 없음';
   endJoy();
@@ -2065,6 +2076,14 @@ $('#btnRankRefresh').addEventListener('click', () => openRank());
 $('#btnRankBack').addEventListener('click', () => showOnly(rankBack === 'over' ? el.over : el.title));
 el.nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); el.nameInput.blur(); startGame(); } });
 el.nameInput.addEventListener('input', () => el.nameField.classList.remove('err'));
+function confirmGate() {
+  const nm = el.gateInput.value.trim().slice(0, 12);
+  if (!nm) { el.gateField.classList.remove('err'); void el.gateField.offsetWidth; el.gateField.classList.add('err'); el.gateInput.focus(); return; }
+  store.set(KEY_NAME, nm); el.nameInput.value = nm; el.gateInput.blur(); showOnly(el.title);
+}
+$('#btnGate').addEventListener('click', confirmGate);
+el.gateInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); confirmGate(); } });
+el.gateInput.addEventListener('input', () => el.gateField.classList.remove('err'));
 el.auto.addEventListener('click', () => { autoWE = !autoWE; store.set(KEY_AUTO, autoWE); syncAuto(); });
 el.mute.addEventListener('click', () => { muted = !muted; store.set(KEY_MUTE, muted); syncMute(); audioInit(); });
 document.addEventListener('visibilitychange', () => {
